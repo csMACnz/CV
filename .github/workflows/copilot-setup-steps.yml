@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Authenticate gh CLI
         run: echo "$GITHUB_TOKEN" | gh auth login --with-token
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Confirm Copilot issue permissions configuration
         run: echo "Copilot agent sessions can use gh issue with issues:write permission."
