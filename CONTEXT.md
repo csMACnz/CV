@@ -5,6 +5,10 @@
 - **Local Development Environment**: Managed by .NET Aspire, enabling an elevated Admin Mode with write access to the local file system.
 
 ## Domain Glossary
+- **Experience**: The canonical domain concept for professional timeline and portfolio content in this application, including timeline entries and nested project narratives.
+- **Experience Payload**: The canonical published data artifact `experience.json`, used as the authoritative production payload contract.
+- **Experience Route**: The canonical route `/experience` for accessing experience-focused content and deep linking.
+- **Publish Verification Contract**: The release verification rule requiring a strict file-path check for `experience.json` in publish output.
 - **Timeline Entry**: A chronological record representing a specific employment period, containing role definitions, company context, and associated Projects.
 - **Project**: A discrete work unit nested under a Timeline Entry, supporting dual-state visual depth (Summary vs. Detailed Narrative) and serving as the primary source for skill tags.
 - **Emergent Skills**: Skill tags declared directly within project files using simplified string identifiers ("Name is ID").
