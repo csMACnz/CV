@@ -35,6 +35,7 @@ An interactive, single-page CV and technical resume web application engineered f
 │   └── employment/
 ├── docs/                 # Project documentation
 │   └── adr/              # Architectural Decision Records (ADR-001 through ADR-009)
+│       └── SUMMARY-ARCHITECTURE.md
 ├── src/                  # C# Blazor WASM frontend & Aspire AppHost projects
 ├── CONTEXT.md            # Domain glossary, system boundaries, and project context
 └── README.md             # Project overview and developer guide
