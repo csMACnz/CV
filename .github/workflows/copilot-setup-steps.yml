@@ -16,5 +16,8 @@ jobs:
       contents: read
       issues: write
     steps:
+      - name: Authenticate gh CLI
+        run: echo "$GITHUB_TOKEN" | gh auth login --with-token
+
       - name: Confirm Copilot issue permissions configuration
         run: echo "Copilot agent sessions can use gh issue with issues:write permission."
