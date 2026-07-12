@@ -12,7 +12,7 @@ Use the repository's configured triage label mapping, including `question` for t
 
 ### Domain docs
 
-This repository already has `CONTEXT.md` at the root and `docs/adr/SUMMARY-ARCHITECTURE.md` as the ADR index. Read those first, then open the relevant ADRs under `docs/adr/`. See `docs/agents/domain.md`.
+This repository currently has `CONTEXT.md` at the root and `docs/adr/SUMMARY-ARCHITECTURE.md` as the ADR index. Read those first, then open the relevant ADRs under `docs/adr/`. If either file is ever absent, fall back to the consumer rules in `docs/agents/domain.md`.
 
 ## Skills location
 

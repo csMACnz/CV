@@ -12,6 +12,8 @@ The skills speak in terms of five canonical triage roles. This file maps those r
 
 Category labels already present in GitHub Issues can remain `bug` and `enhancement`.
 
+`question` is the intentional mapping for `needs-info`, because this repository already uses it for items that need reporter clarification.
+
 - `question` and `wontfix` already exist in the repository.
 - `question` maps to the canonical `needs-info` state to reuse the repo's existing “needs clarification” label and avoid creating a duplicate synonym for the same triage state.
 - Create `needs-triage`, `ready-for-agent`, and `ready-for-human` in GitHub before using `/triage`.
