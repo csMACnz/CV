@@ -54,8 +54,8 @@ To launch the application locally with the elevated Admin Mode and dynamic local
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/your-cv-repo.git
-cd your-cv-repo
+git clone https://github.com/csMACnz/CV.git
+cd CV
 
 # Run via .NET Aspire AppHost
 dotnet run --project src/AppHost/AppHost.csproj
