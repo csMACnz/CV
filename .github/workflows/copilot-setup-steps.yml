@@ -15,4 +15,6 @@ jobs:
     permissions:
       contents: read
       issues: write
-    steps: []
+    steps:
+      - name: Confirm Copilot issue permissions configuration
+        run: echo "Copilot agent sessions can use gh issue with issues:write permission."
