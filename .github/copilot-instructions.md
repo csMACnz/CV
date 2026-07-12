@@ -12,7 +12,7 @@ Use the repository's configured triage label mapping, including `question` for t
 
 ### Domain docs
 
-This is a single-context repository. Read `CONTEXT.md`, then use `docs/adr/SUMMARY-ARCHITECTURE.md` to find relevant ADRs under `docs/adr/`. See `docs/agents/domain.md`.
+This repository already has `CONTEXT.md` at the root and `docs/adr/SUMMARY-ARCHITECTURE.md` as the ADR index. Read those first, then open the relevant ADRs under `docs/adr/`. See `docs/agents/domain.md`.
 
 ## Skills location
 

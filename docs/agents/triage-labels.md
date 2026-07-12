@@ -12,6 +12,6 @@ The skills speak in terms of five canonical triage roles. This file maps those r
 
 Category labels already present in GitHub Issues can remain `bug` and `enhancement`.
 
-`question` and `wontfix` already exist in the repository. `question` is the closest existing fit for the canonical `needs-info` state because it already marks items that need reporter clarification. Create `needs-triage`, `ready-for-agent`, and `ready-for-human` in GitHub before using `/triage`.
+`question` and `wontfix` already exist in the repository. `question` is mapped to the canonical `needs-info` state to reuse the repo's existing “needs clarification” label and avoid creating a duplicate synonym for the same triage state. Create `needs-triage`, `ready-for-agent`, and `ready-for-human` in GitHub before using `/triage`.
 
 When a skill mentions a role (e.g. "apply the AFK-ready triage label"), use the corresponding label string from this table.
