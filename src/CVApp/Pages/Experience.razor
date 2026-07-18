@@ -61,7 +61,7 @@ else
         {
             experience = await ExperienceData.GetExperienceAsync();
         }
-        catch (HttpRequestException)
+        catch (Exception)
         {
             error = "Unable to load experience data. Please check your connection and try again.";
         }
