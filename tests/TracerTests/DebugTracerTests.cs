@@ -60,8 +60,8 @@ public class DebugTracerTests
         if (!File.Exists(cvAppDll))
             return; // DLL not in expected location for this build layout — skip
 
-        Assert.True(BuildHelpers.DllContainsStringLiteral(cvAppDll, "/api/experience"),
-            "Debug build must include the local API route '/api/experience' in the compiled assembly. " +
+        Assert.True(BuildHelpers.DllContainsStringLiteral(cvAppDll, "api/experience"),
+            "Debug build must include the local API route 'api/experience' in the compiled assembly. " +
             "Ensure the ExperienceDataService uses #if DEBUG to select the API data source (see ADR-010).");
     }
 }

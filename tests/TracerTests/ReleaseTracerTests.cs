@@ -90,10 +90,10 @@ public class ReleaseTracerTests
             return; // DLL not found in framework folder — publish layout may differ
 
         // ADR-004: admin CMS endpoints and UI are guarded by #if DEBUG.
-        // In a Release build the literal string "/api/experience" (the debug-only API route)
+        // In a Release build the literal string "api/experience" (the debug-only API route)
         // must not appear in the compiled assembly.
-        Assert.False(BuildHelpers.DllContainsStringLiteral(cvAppDll, "/api/experience"),
-            "Release build must not contain the debug-only '/api/experience' API route string. " +
+        Assert.False(BuildHelpers.DllContainsStringLiteral(cvAppDll, "api/experience"),
+            "Release build must not contain the debug-only 'api/experience' API route string. " +
             "Ensure the ExperienceDataService uses #if DEBUG guards correctly (see ADR-004).");
     }
 

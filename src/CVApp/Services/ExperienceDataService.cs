@@ -16,10 +16,14 @@ public class ExperienceDataService
     {
 #if DEBUG
         // In Debug (local Aspire) mode, data is sourced from the local API endpoint.
-        return _httpClient.GetFromJsonAsync<ExperiencePayload>("/api/experience", cancellationToken);
+        // Relative URL resolves against HttpClient.BaseAddress (HostEnvironment.BaseAddress),
+        // so subpath-hosted deployments (e.g. GitHub Pages) are handled correctly.
+        return _httpClient.GetFromJsonAsync<ExperiencePayload>("api/experience", cancellationToken);
 #else
         // In Release (production) mode, data is fetched from the compiled static payload.
-        return _httpClient.GetFromJsonAsync<ExperiencePayload>("/data/experience.json", cancellationToken);
+        // Relative URL resolves against HttpClient.BaseAddress (HostEnvironment.BaseAddress),
+        // so subpath-hosted deployments (e.g. GitHub Pages) are handled correctly.
+        return _httpClient.GetFromJsonAsync<ExperiencePayload>("data/experience.json", cancellationToken);
 #endif
     }
 }
