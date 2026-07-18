@@ -8,6 +8,8 @@
     <IsTestProject>true</IsTestProject>
     <!-- Path to the CVApp project root, used by tracer tests to invoke build/publish commands -->
     <CVAppProjectPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../src/CVApp/CVApp.csproj'))</CVAppProjectPath>
+    <!-- Path to the ApiService project root, used by tracer tests to verify Debug API endpoint behavior -->
+    <ApiServiceProjectPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../src/ApiService/ApiService.csproj'))</ApiServiceProjectPath>
     <!-- Repository root, passed to tests so they can locate content and resolve publish output -->
     <RepositoryRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../'))</RepositoryRoot>
   </PropertyGroup>
@@ -28,6 +30,10 @@
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>CVAppProjectPath</_Parameter1>
       <_Parameter2>$(CVAppProjectPath)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ApiServiceProjectPath</_Parameter1>
+      <_Parameter2>$(ApiServiceProjectPath)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>RepositoryRoot</_Parameter1>
