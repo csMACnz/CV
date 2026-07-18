@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Aggregation/Aggregation.csproj" />
+    <Project Path="src/ApiService/ApiService.csproj" />
     <Project Path="src/CVApp/CVApp.csproj" />
   </Folder>
   <Folder Name="/tests/">

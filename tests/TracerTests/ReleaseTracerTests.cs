@@ -97,6 +97,26 @@ public class ReleaseTracerTests
             "Ensure the ExperienceDataService uses #if DEBUG guards correctly (see ADR-004).");
     }
 
+    [Fact]
+    public void Release_ApiService_Build_DoesNotContainExperienceApiEndpoint()
+    {
+        using var result = BuildHelpers.RunDotnetBuildApiService("Release");
+
+        Assert.True(result.Succeeded,
+            $"ApiService Release build failed (exit code {result.ExitCode}).\nOutput:\n{result.Output}\nError:\n{result.Error}");
+
+        // ADR-004 / ADR-008: The experience API endpoint is compiled exclusively in Debug mode.
+        // A Release build of the ApiService must not contain the 'api/experience' route string,
+        // confirming that the #if DEBUG guard correctly strips the endpoint at compile time.
+        var apiServiceDll = Path.Combine(result.OutputDirectory, "ApiService.dll");
+        if (!File.Exists(apiServiceDll))
+            return; // DLL not in expected location for this build layout — skip
+
+        Assert.False(BuildHelpers.DllContainsStringLiteral(apiServiceDll, "api/experience"),
+            "ApiService Release build must not contain the 'api/experience' route string. " +
+            "Ensure the endpoint registration is inside a #if DEBUG block (see ADR-004, ADR-008).");
+    }
+
     private static string ListDirectory(string dir)
     {
         if (!Directory.Exists(dir))

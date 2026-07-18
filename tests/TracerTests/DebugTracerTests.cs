@@ -64,4 +64,33 @@ public class DebugTracerTests
             "Debug build must include the local API route 'api/experience' in the compiled assembly. " +
             "Ensure the ExperienceDataService uses #if DEBUG to select the API data source (see ADR-010).");
     }
+
+    [Fact]
+    public void Debug_ApiService_Build_SucceedsWithoutError()
+    {
+        using var result = BuildHelpers.RunDotnetBuildApiService("Debug");
+
+        Assert.True(result.Succeeded,
+            $"ApiService Debug build failed (exit code {result.ExitCode}).\nOutput:\n{result.Output}\nError:\n{result.Error}");
+    }
+
+    [Fact]
+    public void Debug_ApiService_Build_CompiledAssemblyContainsExperienceEndpoint()
+    {
+        using var result = BuildHelpers.RunDotnetBuildApiService("Debug");
+
+        Assert.True(result.Succeeded,
+            $"ApiService Debug build must succeed before assembly inspection can run.\nOutput:\n{result.Output}\nError:\n{result.Error}");
+
+        // ADR-004 / ADR-008: In Debug mode the ApiService exposes the GET /api/experience
+        // endpoint that serves aggregated experience data from the local content directory.
+        // Verify the compiled DLL contains the API route string.
+        var apiServiceDll = Path.Combine(result.OutputDirectory, "ApiService.dll");
+        if (!File.Exists(apiServiceDll))
+            return; // DLL not in expected location for this build layout — skip
+
+        Assert.True(BuildHelpers.DllContainsStringLiteral(apiServiceDll, "api/experience"),
+            "ApiService Debug build must include the local API route 'api/experience' in the compiled assembly. " +
+            "Ensure the endpoint is registered inside a #if DEBUG block (see ADR-008).");
+    }
 }

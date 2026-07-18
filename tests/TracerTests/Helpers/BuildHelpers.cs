@@ -6,6 +6,7 @@ namespace TracerTests.Helpers;
 public static class BuildHelpers
 {
     private static readonly string CVAppProjectPath;
+    private static readonly string ApiServiceProjectPath;
     private static readonly string RepositoryRoot;
 
     static BuildHelpers()
@@ -14,21 +15,28 @@ public static class BuildHelpers
         CVAppProjectPath = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .FirstOrDefault(a => a.Key == "CVAppProjectPath")?.Value
             ?? throw new InvalidOperationException("CVAppProjectPath assembly metadata not set. Ensure the TracerTests.csproj defines the AssemblyMetadata for 'CVAppProjectPath'.");
+        ApiServiceProjectPath = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .FirstOrDefault(a => a.Key == "ApiServiceProjectPath")?.Value
+            ?? throw new InvalidOperationException("ApiServiceProjectPath assembly metadata not set. Ensure the TracerTests.csproj defines the AssemblyMetadata for 'ApiServiceProjectPath'.");
         RepositoryRoot = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .FirstOrDefault(a => a.Key == "RepositoryRoot")?.Value
             ?? throw new InvalidOperationException("RepositoryRoot assembly metadata not set. Ensure the TracerTests.csproj defines the AssemblyMetadata for 'RepositoryRoot'.");
     }
 
-    public static BuildResult RunDotnetBuild(string configuration, string? extraArgs = null)
+    public static BuildResult RunDotnetBuild(string configuration, string? projectPath = null, string? extraArgs = null)
     {
+        var project = projectPath ?? CVAppProjectPath;
         var outputDir = Path.Combine(Path.GetTempPath(), $"cv-tracer-build-{Guid.NewGuid():N}");
-        var args = $"build \"{CVAppProjectPath}\" -c {configuration} --nologo -o \"{outputDir}\"";
+        var args = $"build \"{project}\" -c {configuration} --nologo -o \"{outputDir}\"";
         if (!string.IsNullOrEmpty(extraArgs))
             args += $" {extraArgs}";
 
         var result = RunDotnet(args, RepositoryRoot);
         return new BuildResult(result.ExitCode, result.Output, result.Error, outputDir);
     }
+
+    public static BuildResult RunDotnetBuildApiService(string configuration, string? extraArgs = null)
+        => RunDotnetBuild(configuration, ApiServiceProjectPath, extraArgs);
 
     public static BuildResult RunDotnetPublish(string configuration, string? extraArgs = null)
     {
