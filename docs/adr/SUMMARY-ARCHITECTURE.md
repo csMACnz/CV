@@ -11,4 +11,4 @@
 | **ADR-007** | Search Execution | Pure C# in-memory tokenized index with debounced input processing. |
 | **ADR-008** | CMS Persistence Gateway | Local ASP.NET Core Minimal API writes edited content straight back to repository files; git operations remain manual. |
 | **ADR-009** | Detail Blade Architecture | Deep project view driven via query parameters (`?project=id`) rendering an AWS/Azure-style overlapping CSS slide-over blade. |
-| **ADR-010** | Experience Data Contract & Source Selection | Canonical production payload uses `experience.json` and data source behavior is compile-time selected (Release static payload, Debug local API). |
+| **ADR-010** | Experience Data Contract & Source Selection | Canonical Experience contract uses `experience.json` and `/experience`, with compile-time source selection by build configuration (Release compiled static payload, Debug/local Aspire API-backed behavior). |

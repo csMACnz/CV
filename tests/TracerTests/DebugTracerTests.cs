@@ -46,7 +46,7 @@ public class DebugTracerTests
     }
 
     [Fact]
-    public void Debug_Build_CompiledAssemblyContainsApiDataSourceRoute()
+    public void Debug_Build_CompiledAssemblyContainsExperienceDataSourceRoute()
     {
         using var result = BuildHelpers.RunDotnetBuild("Debug");
 
@@ -54,14 +54,14 @@ public class DebugTracerTests
             $"Debug build must succeed before assembly inspection can run.\nOutput:\n{result.Output}\nError:\n{result.Error}");
 
         // ADR-004 / ADR-010: In Debug mode the ExperienceDataService fetches from the local
-        // API endpoint (/api/experience) rather than the compiled static JSON.
+        // API endpoint (/experience) rather than the compiled static JSON.
         // Verify the compiled DLL contains the debug API route string.
         var cvAppDll = Path.Combine(result.OutputDirectory, "CVApp.dll");
         if (!File.Exists(cvAppDll))
             return; // DLL not in expected location for this build layout — skip
 
-        Assert.True(BuildHelpers.DllContainsStringLiteral(cvAppDll, "api/experience"),
-            "Debug build must include the local API route 'api/experience' in the compiled assembly. " +
+        Assert.True(BuildHelpers.DllContainsStringLiteral(cvAppDll, "/experience"),
+            "Debug build must include the local API route '/experience' in the compiled assembly. " +
             "Ensure the ExperienceDataService uses #if DEBUG to select the API data source (see ADR-010).");
     }
 
@@ -82,15 +82,15 @@ public class DebugTracerTests
         Assert.True(result.Succeeded,
             $"ApiService Debug build must succeed before assembly inspection can run.\nOutput:\n{result.Output}\nError:\n{result.Error}");
 
-        // ADR-004 / ADR-008: In Debug mode the ApiService exposes the GET /api/experience
+        // ADR-004 / ADR-008: In Debug mode the ApiService exposes the GET /experience
         // endpoint that serves aggregated experience data from the local content directory.
         // Verify the compiled DLL contains the API route string.
         var apiServiceDll = Path.Combine(result.OutputDirectory, "ApiService.dll");
         if (!File.Exists(apiServiceDll))
             return; // DLL not in expected location for this build layout — skip
 
-        Assert.True(BuildHelpers.DllContainsStringLiteral(apiServiceDll, "api/experience"),
-            "ApiService Debug build must include the local API route 'api/experience' in the compiled assembly. " +
+        Assert.True(BuildHelpers.DllContainsStringLiteral(apiServiceDll, "/experience"),
+            "ApiService Debug build must include the local API route '/experience' in the compiled assembly. " +
             "Ensure the endpoint is registered inside a #if DEBUG block (see ADR-008).");
     }
 }
