@@ -20,7 +20,7 @@ An interactive, single-page CV and technical resume web application engineered f
 - **Framework**: Blazor WebAssembly (.NET) running client-side.
 - **Styling**: Modern, framework-less CSS with zero bundlers, SASS, or npm dependencies.
 - **Orchestration**: .NET Aspire (exclusive to local development for environment management and local CMS file persistence).
-- **Data Architecture**: Human-readable Markdown and YAML content files compiled into a single static `resume.json` payload during release builds.
+- **Data Architecture**: Human-readable Markdown and YAML content files compiled into a single static `experience.json` payload during release builds.
 - **Hosting**: GitHub Pages (Static Site Assembly).
 
 > **Zero-Node Pipeline**: No Node.js, npm, webpack, or JavaScript compilation tools are used in development or build pipelines. Minimal vanilla JavaScript is strictly reserved for native browser APIs (`window.print()`, `requestAnimationFrame`).
@@ -34,9 +34,13 @@ An interactive, single-page CV and technical resume web application engineered f
 ├── content/              # Source-of-truth Markdown and YAML files per employer/project
 │   └── employment/
 ├── docs/                 # Project documentation
-│   └── adr/              # Architectural Decision Records (ADR-001 through ADR-009)
+│   └── adr/              # Architectural Decision Records (ADR-001 through ADR-010)
 │       └── SUMMARY-ARCHITECTURE.md
-├── src/                  # C# Blazor WASM frontend & Aspire AppHost projects
+├── src/
+│   ├── Aggregation/      # Build-time aggregation tool (YAML/Markdown → experience.json)
+│   └── CVApp/            # Blazor WASM frontend application
+├── tests/
+│   └── TracerTests/      # Release & Debug tracer tests for compile-time behavior
 ├── CONTEXT.md            # Domain glossary, system boundaries, and project context
 └── README.md             # Project overview and developer guide
 ```
@@ -66,7 +70,7 @@ Open the Aspire Dashboard link displayed in your terminal to access the local we
 
 ## Build & Static Deployment
 
-Production builds automatically run a pre-compilation step that aggregates all modular `/content` files into `wwwroot/data/resume.json` and strips local Admin API paths via `#if DEBUG` guardrails.
+Production builds automatically run a pre-compilation step that aggregates all modular `/content` files into `wwwroot/data/experience.json` and strips local Admin API paths via `#if DEBUG` guardrails.
 
 ```bash
 # Aggregate content and compile static release artifact
@@ -88,5 +92,6 @@ Detailed rationale behind every technical choice made in this repository can be 
 - **ADR-007: Client-Side Search and Filter Processing**
 - **ADR-008: Local CMS Persistence Gateway**
 - **ADR-009: Query-Param State & Overlapping Detail Blade Architecture**
+- **ADR-010: Experience Data Contract & Compile-Time Source Selection**
 
 Full summary matrix available at **docs/adr/SUMMARY-ARCHITECTURE.md**.

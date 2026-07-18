@@ -55,3 +55,6 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Build-time generated artifacts — produced by the Release aggregation step and must not be committed
+src/CVApp/wwwroot/data/experience.json
