@@ -19,7 +19,7 @@ app.UseCors();
 
 // ADR-008 / ADR-010: Serve aggregated experience data from the local content directory.
 // ContentRoot config key lets the Aspire AppHost override the default path.
-app.MapGet("api/experience", (IConfiguration config, IWebHostEnvironment env) =>
+app.MapGet("/experience", (IConfiguration config, IWebHostEnvironment env) =>
 {
     var contentRoot = config["ContentRoot"]
         ?? Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", "..", "content"));

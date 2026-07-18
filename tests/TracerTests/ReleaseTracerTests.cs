@@ -90,8 +90,7 @@ public class ReleaseTracerTests
             return; // DLL not found in framework folder — publish layout may differ
 
         // ADR-004: admin CMS endpoints and UI are guarded by #if DEBUG.
-        // In a Release build the literal string "api/experience" (the debug-only API route)
-        // must not appear in the compiled assembly.
+        // In a Release build, legacy debug-only API route markers must not appear.
         Assert.False(BuildHelpers.DllContainsStringLiteral(cvAppDll, "api/experience"),
             "Release build must not contain the debug-only 'api/experience' API route string. " +
             "Ensure the ExperienceDataService uses #if DEBUG guards correctly (see ADR-004).");
@@ -106,14 +105,14 @@ public class ReleaseTracerTests
             $"ApiService Release build failed (exit code {result.ExitCode}).\nOutput:\n{result.Output}\nError:\n{result.Error}");
 
         // ADR-004 / ADR-008: The experience API endpoint is compiled exclusively in Debug mode.
-        // A Release build of the ApiService must not contain the 'api/experience' route string,
+        // A Release build of the ApiService must not contain the '/experience' route string,
         // confirming that the #if DEBUG guard correctly strips the endpoint at compile time.
         var apiServiceDll = Path.Combine(result.OutputDirectory, "ApiService.dll");
         if (!File.Exists(apiServiceDll))
             return; // DLL not in expected location for this build layout — skip
 
-        Assert.False(BuildHelpers.DllContainsStringLiteral(apiServiceDll, "api/experience"),
-            "ApiService Release build must not contain the 'api/experience' route string. " +
+        Assert.False(BuildHelpers.DllContainsStringLiteral(apiServiceDll, "/experience"),
+            "ApiService Release build must not contain the '/experience' route string. " +
             "Ensure the endpoint registration is inside a #if DEBUG block (see ADR-004, ADR-008).");
     }
 
