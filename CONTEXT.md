@@ -7,7 +7,7 @@
 ## Domain Glossary
 - **Experience**: The canonical domain concept for this application’s professional timeline and portfolio scope, including timeline entries and nested project narratives.
 - **Experience Payload**: The canonical payload artifact `experience.json`, used as the authoritative production data contract and publish verification target.
-- **Experience Route**: The canonical route `/experience` used for navigation and API semantics aligned to Experience terminology.
+- **Experience Route**: The canonical Experience route segment `/experience`, used in the debug-only local CMS API endpoint `api/experience` for local Aspire data access.
 - **Publish Verification Contract**: The release verification rule requiring a strict file-path check for `experience.json` in publish output.
 - **Timeline Entry**: A chronological record representing a specific employment period, containing role definitions, company context, and associated Projects.
 - **Project**: A discrete work unit nested under a Timeline Entry, supporting dual-state visual depth (Summary vs. Detailed Narrative) and serving as the primary source for skill tags.
