@@ -1,0 +1,69 @@
+@page "/experience"
+@using CVApp.Services
+@inject ExperienceDataService ExperienceData
+
+<PageTitle>Experience</PageTitle>
+
+<h1>Experience</h1>
+
+@if (error is not null)
+{
+    <p role="alert">@error</p>
+}
+else if (experience is null)
+{
+    <p>Loading experience...</p>
+}
+else
+{
+    @foreach (var entry in experience.Timeline)
+    {
+        <section>
+            <h2>@entry.Company</h2>
+            @if (entry.Period is not null || entry.Location is not null)
+            {
+                <p>
+                    @entry.Period
+                    @if (entry.Period is not null && entry.Location is not null)
+                    {
+                        <span> · </span>
+                    }
+                    @entry.Location
+                </p>
+            }
+
+            @foreach (var role in entry.Roles)
+            {
+                <h3>@role.Title</h3>
+                @foreach (var project in role.Projects)
+                {
+                    <article>
+                        <h4>@project.Name</h4>
+                        <p>@project.Narrative</p>
+                        @if (project.Skills.Count > 0)
+                        {
+                            <p>@string.Join(", ", project.Skills)</p>
+                        }
+                    </article>
+                }
+            }
+        </section>
+    }
+}
+
+@code {
+    private ExperiencePayload? experience;
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            experience = await ExperienceData.GetExperienceAsync();
+        }
+        catch (HttpRequestException)
+        {
+            error = "Unable to load experience.";
+        }
+    }
+}

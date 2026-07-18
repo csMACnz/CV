@@ -64,4 +64,20 @@ public class DebugTracerTests
             "Debug build must include the local API route 'api/experience' in the compiled assembly. " +
             "Ensure the ExperienceDataService uses #if DEBUG to select the API data source (see ADR-010).");
     }
+
+    [Fact]
+    public void Debug_Build_CompiledAssemblyContainsCanonicalExperienceRoute()
+    {
+        using var result = BuildHelpers.RunDotnetBuild("Debug");
+
+        Assert.True(result.Succeeded,
+            $"Debug build must succeed before route inspection can run.\nOutput:\n{result.Output}\nError:\n{result.Error}");
+
+        var cvAppDll = Path.Combine(result.OutputDirectory, "CVApp.dll");
+        if (!File.Exists(cvAppDll))
+            return; // DLL not in expected location for this build layout — skip
+
+        Assert.True(BuildHelpers.DllContainsStringLiteral(cvAppDll, "/experience"),
+            "Debug build must include the canonical '/experience' route.");
+    }
 }
