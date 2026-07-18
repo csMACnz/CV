@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    name: Build (Release)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build (Release)
+        run: dotnet build src/CVApp/CVApp.csproj -c Release --no-restore --nologo
+
+      - name: Verify experience.json artifact
+        run: |
+          if [ ! -f "src/CVApp/wwwroot/data/experience.json" ]; then
+            echo "::error::Publish verification failed: expected artifact not found at strict path 'src/CVApp/wwwroot/data/experience.json'."
+            echo "The experience.json payload must be produced by the Release build aggregation step."
+            exit 1
+          fi
+          echo "Publish verification passed: wwwroot/data/experience.json exists."
+
+  tracer-tests-release:
+    name: Tracer Tests (Release)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Run Release tracer tests
+        run: dotnet test tests/TracerTests/TracerTests.csproj --filter "FullyQualifiedName~ReleaseTracerTests" --logger "console;verbosity=normal" --nologo
+        timeout-minutes: 15
+
+  tracer-tests-debug:
+    name: Tracer Tests (Debug)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Run Debug tracer tests
+        run: dotnet test tests/TracerTests/TracerTests.csproj --filter "FullyQualifiedName~DebugTracerTests" --logger "console;verbosity=normal" --nologo
+        timeout-minutes: 10
