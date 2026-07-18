@@ -24,7 +24,7 @@ public class ExperienceDataService
     }
 }
 
-public record ExperiencePayload(List<TimelineEntry> Timeline);
-public record TimelineEntry(string Company, string? Period, string? Location, List<Role> Roles);
-public record Role(string Title, string? Start, string? End, List<Project> Projects);
-public record Project(string Name, List<string> Skills, string Narrative);
+public record ExperiencePayload(IReadOnlyList<TimelineEntry> Timeline);
+public record TimelineEntry(string Company, string? Period, string? Location, IReadOnlyList<Role> Roles);
+public record Role(string Title, string? Start, string? End, IReadOnlyList<Project> Projects);
+public record Project(string Name, IReadOnlyList<string> Skills, string Narrative);

@@ -12,11 +12,11 @@ public static class BuildHelpers
     {
         var assembly = typeof(BuildHelpers).Assembly;
         CVAppProjectPath = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            .First(a => a.Key == "CVAppProjectPath").Value
-            ?? throw new InvalidOperationException("CVAppProjectPath assembly metadata not set.");
+            .FirstOrDefault(a => a.Key == "CVAppProjectPath")?.Value
+            ?? throw new InvalidOperationException("CVAppProjectPath assembly metadata not set. Ensure the TracerTests.csproj defines the AssemblyMetadata for 'CVAppProjectPath'.");
         RepositoryRoot = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            .First(a => a.Key == "RepositoryRoot").Value
-            ?? throw new InvalidOperationException("RepositoryRoot assembly metadata not set.");
+            .FirstOrDefault(a => a.Key == "RepositoryRoot")?.Value
+            ?? throw new InvalidOperationException("RepositoryRoot assembly metadata not set. Ensure the TracerTests.csproj defines the AssemblyMetadata for 'RepositoryRoot'.");
     }
 
     public static BuildResult RunDotnetBuild(string configuration, string? extraArgs = null)
