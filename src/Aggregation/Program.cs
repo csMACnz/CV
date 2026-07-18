@@ -58,7 +58,7 @@ if (Directory.Exists(employmentRoot))
 
                 projects.Add(new Project(
                     projectData.Name ?? Path.GetFileName(projectDir),
-                    projectData.Skills ?? [],
+                    projectData.Skills ?? new List<string>(),
                     narrative));
             }
 

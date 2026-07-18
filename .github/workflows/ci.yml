@@ -10,6 +10,8 @@ jobs:
   build:
     name: Build (Release)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,6 +39,8 @@ jobs:
   tracer-tests-release:
     name: Tracer Tests (Release)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,6 +60,8 @@ jobs:
   tracer-tests-debug:
     name: Tracer Tests (Debug)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4

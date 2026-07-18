@@ -60,21 +60,8 @@ public class DebugTracerTests
         if (!File.Exists(cvAppDll))
             return; // DLL not in expected location for this build layout — skip
 
-        Assert.True(DllContainsStringLiteral(cvAppDll, "/api/experience"),
+        Assert.True(BuildHelpers.DllContainsStringLiteral(cvAppDll, "/api/experience"),
             "Debug build must include the local API route '/api/experience' in the compiled assembly. " +
             "Ensure the ExperienceDataService uses #if DEBUG to select the API data source (see ADR-010).");
-    }
-
-    private static bool DllContainsStringLiteral(string dllPath, string searchString)
-    {
-        var dllBytes = File.ReadAllBytes(dllPath);
-        // .NET IL assemblies store string literals in the #US stream as UTF-16LE.
-        var needle = System.Text.Encoding.Unicode.GetBytes(searchString);
-        for (var i = 0; i <= dllBytes.Length - needle.Length; i++)
-        {
-            if (dllBytes.Skip(i).Take(needle.Length).SequenceEqual(needle))
-                return true;
-        }
-        return false;
     }
 }

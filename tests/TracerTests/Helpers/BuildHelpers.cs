@@ -22,20 +22,12 @@ public static class BuildHelpers
     public static BuildResult RunDotnetBuild(string configuration, string? extraArgs = null)
     {
         var outputDir = Path.Combine(Path.GetTempPath(), $"cv-tracer-build-{Guid.NewGuid():N}");
-        try
-        {
-            var args = $"build \"{CVAppProjectPath}\" -c {configuration} --nologo -o \"{outputDir}\"";
-            if (!string.IsNullOrEmpty(extraArgs))
-                args += $" {extraArgs}";
+        var args = $"build \"{CVAppProjectPath}\" -c {configuration} --nologo -o \"{outputDir}\"";
+        if (!string.IsNullOrEmpty(extraArgs))
+            args += $" {extraArgs}";
 
-            var result = RunDotnet(args, RepositoryRoot);
-            return new BuildResult(result.ExitCode, result.Output, result.Error, outputDir);
-        }
-        catch
-        {
-            Directory.Delete(outputDir, recursive: true);
-            throw;
-        }
+        var result = RunDotnet(args, RepositoryRoot);
+        return new BuildResult(result.ExitCode, result.Output, result.Error, outputDir);
     }
 
     public static BuildResult RunDotnetPublish(string configuration, string? extraArgs = null)
@@ -67,6 +59,25 @@ public static class BuildHelpers
         process.WaitForExit();
 
         return (process.ExitCode, output, error);
+    }
+
+    /// <summary>
+    /// Searches a compiled .NET IL assembly for a string literal.
+    /// .NET IL assemblies store string literals in the #US metadata heap as UTF-16LE.
+    /// </summary>
+    public static bool DllContainsStringLiteral(string dllPath, string searchString)
+    {
+        var dllBytes = File.ReadAllBytes(dllPath);
+        var needle = System.Text.Encoding.Unicode.GetBytes(searchString);
+        var dllSpan = dllBytes.AsSpan();
+        var needleSpan = needle.AsSpan();
+
+        for (var i = 0; i <= dllSpan.Length - needleSpan.Length; i++)
+        {
+            if (dllSpan.Slice(i, needleSpan.Length).SequenceEqual(needleSpan))
+                return true;
+        }
+        return false;
     }
 }
 

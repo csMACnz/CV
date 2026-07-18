@@ -92,22 +92,9 @@ public class ReleaseTracerTests
         // ADR-004: admin CMS endpoints and UI are guarded by #if DEBUG.
         // In a Release build the literal string "/api/experience" (the debug-only API route)
         // must not appear in the compiled assembly.
-        Assert.False(DllContainsStringLiteral(cvAppDll, "/api/experience"),
+        Assert.False(BuildHelpers.DllContainsStringLiteral(cvAppDll, "/api/experience"),
             "Release build must not contain the debug-only '/api/experience' API route string. " +
             "Ensure the ExperienceDataService uses #if DEBUG guards correctly (see ADR-004).");
-    }
-
-    private static bool DllContainsStringLiteral(string dllPath, string searchString)
-    {
-        var dllBytes = File.ReadAllBytes(dllPath);
-        // .NET IL assemblies store string literals in the #US stream as UTF-16LE.
-        var needle = System.Text.Encoding.Unicode.GetBytes(searchString);
-        for (var i = 0; i <= dllBytes.Length - needle.Length; i++)
-        {
-            if (dllBytes.Skip(i).Take(needle.Length).SequenceEqual(needle))
-                return true;
-        }
-        return false;
     }
 
     private static string ListDirectory(string dir)
