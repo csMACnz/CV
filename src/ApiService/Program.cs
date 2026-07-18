@@ -47,7 +47,7 @@ internal static class ContentAggregator
 
         if (Directory.Exists(employmentRoot))
         {
-            foreach (var employerDir in Directory.GetDirectories(employmentRoot).OrderBy(d => d))
+            foreach (var employerDir in Directory.GetDirectories(employmentRoot).OrderBy(dir => dir))
             {
                 var employerYamlPath = Path.Combine(employerDir, "employer.yaml");
                 if (!File.Exists(employerYamlPath))
@@ -56,7 +56,7 @@ internal static class ContentAggregator
                 var employerData = deserializer.Deserialize<EmployerData>(File.ReadAllText(employerYamlPath));
                 var roles = new List<Role>();
 
-                foreach (var roleDir in Directory.GetDirectories(employerDir).OrderBy(d => d))
+                foreach (var roleDir in Directory.GetDirectories(employerDir).OrderBy(dir => dir))
                 {
                     var roleYamlPath = Path.Combine(roleDir, "role.yaml");
                     if (!File.Exists(roleYamlPath))
@@ -65,7 +65,7 @@ internal static class ContentAggregator
                     var roleData = deserializer.Deserialize<RoleData>(File.ReadAllText(roleYamlPath));
                     var projects = new List<Project>();
 
-                    foreach (var projectDir in Directory.GetDirectories(roleDir).OrderBy(d => d))
+                    foreach (var projectDir in Directory.GetDirectories(roleDir).OrderBy(dir => dir))
                     {
                         var projectYamlPath = Path.Combine(projectDir, "project.yaml");
                         var projectMdPath = Path.Combine(projectDir, "project.md");
