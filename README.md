@@ -95,3 +95,9 @@ Detailed rationale behind every technical choice made in this repository can be 
 - **ADR-010: Experience Data Contract & Compile-Time Source Selection**
 
 Full summary matrix available at **docs/adr/SUMMARY-ARCHITECTURE.md**.
+
+## Licensing
+
+Source code and repository materials are licensed under the [Apache License 2.0](LICENSE), unless otherwise noted.
+
+The `content/` directory is **excluded** from the Apache-2.0 license. All files under `content/` are subject to a separate [All Rights Reserved content license](CONTENT_LICENSE.md). No permission is granted to copy, modify, redistribute, publish, or commercially use that content without prior written permission.
