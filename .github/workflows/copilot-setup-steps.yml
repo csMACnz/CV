@@ -17,4 +17,6 @@ jobs:
       issues: write
     steps:
       - name: Confirm Copilot issue permissions configuration
-        run: echo "Copilot agent sessions can use gh issue with issues:write permission."
+        run: gh auth status
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
