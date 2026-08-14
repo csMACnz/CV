@@ -1,6 +1,7 @@
 ﻿@page "/"
 @page "/experience"
 @inject ExperienceDataService ExperienceDataService
+@inject SkillHighlightService SkillHighlightService
 
 <PageTitle>Experience</PageTitle>
 
@@ -16,13 +17,19 @@ else
 {
     <div class="experience-shell">
         <ProfileHeader Data="@CvData.Profile" />
-        <TimelineFeed Entries="@CvData.Timeline" />
+        <SkillMatrix Skills="@AllSkills"
+                     ActiveSkill="@ActiveSkill"
+                     ActiveSkillChanged="@OnActiveSkillChanged" />
+        <TimelineFeed Entries="@CvData.Timeline" Highlights="@CurrentHighlights" />
     </div>
 }
 
 @code {
     private ExperiencePayload? CvData;
     private string? ErrorMessage;
+    private string? ActiveSkill;
+    private IReadOnlyList<string> AllSkills = [];
+    private HighlightMap CurrentHighlights = HighlightMap.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -30,11 +37,25 @@ else
         {
             CvData = await ExperienceDataService.GetExperienceAsync();
             if (CvData is null)
+            {
                 ErrorMessage = "Experience data is unavailable right now.";
+            }
+            else
+            {
+                AllSkills = SkillHighlightService.GetAllSkills(CvData.Timeline);
+            }
         }
         catch
         {
             ErrorMessage = "Experience data could not be loaded.";
         }
+    }
+
+    private void OnActiveSkillChanged(string? skill)
+    {
+        ActiveSkill = skill;
+        CurrentHighlights = CvData is not null
+            ? SkillHighlightService.BuildHighlightMap(CvData.Timeline, skill)
+            : HighlightMap.Empty;
     }
 }

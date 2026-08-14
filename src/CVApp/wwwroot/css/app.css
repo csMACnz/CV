@@ -101,3 +101,43 @@ a, .btn-link {
 code {
     color: #c02d76;
 }
+
+/* Skill Matrix */
+.skill-matrix {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 1rem 0;
+}
+
+.skill-matrix__node {
+    padding: 0.3rem 0.75rem;
+    border: 1px solid #1b6ec2;
+    border-radius: 1rem;
+    background: transparent;
+    color: #1b6ec2;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background 0.15s, color 0.15s;
+}
+
+.skill-matrix__node:hover {
+    background: #e8f0fe;
+}
+
+.skill-matrix__node--active {
+    background: #1b6ec2;
+    color: #fff;
+}
+
+/* Highlight state */
+.is-highlighted {
+    outline: 2px solid #1b6ec2;
+    outline-offset: 2px;
+}
+
+.timeline-card--dimmed,
+.timeline-card__role--dimmed {
+    opacity: 0.4;
+    transition: opacity 0.2s;
+}

@@ -1,6 +1,6 @@
 @using CVApp.Services
 
-<div class="timeline-card">
+<div class="timeline-card @(Highlights.IsActive && !Highlights.IsEntryHighlighted(Entry) ? "timeline-card--dimmed" : string.Empty) @(Highlights.IsEntryHighlighted(Entry) ? "is-highlighted" : string.Empty)">
     <div class="timeline-card__header">
         <h2 class="timeline-card__company">@Entry.Company</h2>
         @if (!string.IsNullOrWhiteSpace(Entry.Period))
@@ -15,7 +15,7 @@
     <div class="timeline-card__roles">
         @foreach (var role in Entry.Roles)
         {
-            <div class="timeline-card__role">
+            <div class="timeline-card__role @(Highlights.IsActive && !Highlights.IsRoleHighlighted(role) ? "timeline-card__role--dimmed" : string.Empty) @(Highlights.IsRoleHighlighted(role) ? "is-highlighted" : string.Empty)">
                 <h3 class="timeline-card__role-title">@role.Title</h3>
                 @if (!string.IsNullOrWhiteSpace(role.Start) || !string.IsNullOrWhiteSpace(role.End))
                 {
@@ -30,7 +30,7 @@
                 }
                 @foreach (var project in role.Projects)
                 {
-                    <ProjectCard Project="@project" />
+                    <ProjectCard Project="@project" IsHighlighted="@Highlights.IsProjectHighlighted(project)" />
                 }
             </div>
         }
@@ -40,4 +40,7 @@
 @code {
     [Parameter, EditorRequired]
     public TimelineEntry Entry { get; set; } = default!;
+
+    [Parameter]
+    public HighlightMap Highlights { get; set; } = HighlightMap.Empty;
 }
