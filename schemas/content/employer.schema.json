@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://csmac.nz/schemas/content/employer.schema.json",
+  "title": "Employer Content",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["company"],
+  "properties": {
+    "company": {
+      "type": "string",
+      "minLength": 1
+    },
+    "period": {
+      "type": "string",
+      "minLength": 1
+    },
+    "location": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

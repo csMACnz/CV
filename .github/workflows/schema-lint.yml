@@ -1,0 +1,22 @@
+name: Schema Lint
+
+on:
+  pull_request:
+
+jobs:
+  validate-json-schema:
+    name: Validate source and compiled schemas
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Run schema validation
+        run: pwsh ./scripts/validate-schema.ps1
