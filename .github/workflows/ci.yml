@@ -99,7 +99,13 @@ jobs:
         run: dotnet build tests/SmokeTests/SmokeTests.csproj --nologo
 
       - name: Install Playwright browser
-        run: pwsh tests/SmokeTests/bin/Debug/net8.0/playwright.ps1 install --with-deps chromium
+        run: |
+          PLAYWRIGHT_SCRIPT=$(find tests/SmokeTests/bin -type f -name playwright.ps1 | head -n 1)
+          if [ -z "$PLAYWRIGHT_SCRIPT" ]; then
+            echo "::error::playwright.ps1 not found after building SmokeTests project."
+            exit 1
+          fi
+          pwsh "$PLAYWRIGHT_SCRIPT" install --with-deps chromium
 
       - name: Run Release smoke tests
         run: dotnet test tests/SmokeTests/SmokeTests.csproj --logger "console;verbosity=normal" --nologo

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.FileProviders;
@@ -14,7 +15,7 @@ public class ReleaseSmokeTests
     [Fact]
     public async Task ReleasePublishArtifacts_LoadInHostedCvPath_WithoutBlazorErrorUi()
     {
-        using var publish = RunDotnetPublishRelease();
+        using var publish = await RunDotnetPublishReleaseAsync();
         Assert.True(publish.Succeeded,
             $"Release publish failed (exit code {publish.ExitCode}).\nOutput:\n{publish.Output}\nError:\n{publish.Error}");
 
@@ -36,6 +37,7 @@ public class ReleaseSmokeTests
         var page = await browser.NewPageAsync();
         var failedRequests = new List<string>();
         var pageErrors = new List<string>();
+        var consoleErrors = new List<string>();
 
         page.RequestFailed += (_, request) =>
         {
@@ -47,6 +49,12 @@ public class ReleaseSmokeTests
             pageErrors.Add(exception);
         };
 
+        page.Console += (_, message) =>
+        {
+            if (message.Type == "error")
+                consoleErrors.Add(message.Text);
+        };
+
         var response = await page.GotoAsync($"{harness.BaseUrl}/CV/", new PageGotoOptions
         {
             WaitUntil = WaitUntilState.NetworkIdle
@@ -54,25 +62,55 @@ public class ReleaseSmokeTests
 
         Assert.NotNull(response);
         Assert.Equal((int)HttpStatusCode.OK, response!.Status);
-        Assert.Contains("Hello, world!", await page.TextContentAsync("h1"));
+
+        var heading = page.Locator("h1");
+        var headingVisible = false;
+        for (var i = 0; i < 60; i++)
+        {
+            if (await heading.CountAsync() > 0 && await heading.First.IsVisibleAsync())
+            {
+                headingVisible = true;
+                break;
+            }
+
+            await Task.Delay(TimeSpan.FromSeconds(2));
+        }
+
+        if (!headingVisible)
+        {
+            var pageHtml = await page.ContentAsync();
+            var diagnostics = string.Join(Environment.NewLine, new[]
+            {
+                "Smoke test failed to render heading within 120 seconds.",
+                $"Page errors: {(pageErrors.Count == 0 ? "(none)" : string.Join(" | ", pageErrors))}",
+                $"Console errors: {(consoleErrors.Count == 0 ? "(none)" : string.Join(" | ", consoleErrors))}",
+                $"Failed requests: {(failedRequests.Count == 0 ? "(none)" : string.Join(" | ", failedRequests))}",
+                $"Page content snippet: {pageHtml[..Math.Min(pageHtml.Length, 2000)]}"
+            });
+            Assert.Fail(diagnostics);
+        }
+
+        Assert.Contains("Hello, world!", await heading.First.TextContentAsync());
 
         Assert.Empty(pageErrors);
+        Assert.Empty(consoleErrors);
         Assert.Empty(failedRequests.Where(r => r.Contains("/CV/_framework/", StringComparison.OrdinalIgnoreCase)));
 
         var blazorErrorUiVisible = await page.Locator("#blazor-error-ui").IsVisibleAsync();
         Assert.False(blazorErrorUiVisible, "Blazor error UI is visible, indicating app startup failure.");
     }
 
-    private static BuildResult RunDotnetPublishRelease()
+    private static async Task<BuildResult> RunDotnetPublishReleaseAsync()
     {
         var outputDir = Path.Combine(Path.GetTempPath(), $"cv-smoke-publish-{Guid.NewGuid():N}");
+        var projectPath = GetAssemblyMetadata("CVAppProjectPath");
         var args =
-            $"publish \"{GetAssemblyMetadata(\"CVAppProjectPath\")}\" -c Release --nologo -o \"{outputDir}\" -p:ReleaseBaseHref=/CV/";
-        var result = RunDotnet(args, GetAssemblyMetadata("RepositoryRoot"));
+            $"publish \"{projectPath}\" -c Release --nologo -o \"{outputDir}\" -p:ReleaseBaseHref=/CV/";
+        var result = await RunDotnetAsync(args, GetAssemblyMetadata("RepositoryRoot"));
         return new BuildResult(result.ExitCode, result.Output, result.Error, outputDir);
     }
 
-    private static (int ExitCode, string Output, string Error) RunDotnet(string arguments, string workingDirectory)
+    private static async Task<(int ExitCode, string Output, string Error)> RunDotnetAsync(string arguments, string workingDirectory)
     {
         var psi = new ProcessStartInfo("dotnet", arguments)
         {
@@ -85,11 +123,12 @@ public class ReleaseSmokeTests
         using var process = Process.Start(psi)
                             ?? throw new InvalidOperationException("Failed to start dotnet process.");
 
-        var output = process.StandardOutput.ReadToEnd();
-        var error = process.StandardError.ReadToEnd();
-        process.WaitForExit();
+        var outputTask = process.StandardOutput.ReadToEndAsync();
+        var errorTask = process.StandardError.ReadToEndAsync();
+        await process.WaitForExitAsync();
+        await Task.WhenAll(outputTask, errorTask);
 
-        return (process.ExitCode, output, error);
+        return (process.ExitCode, outputTask.Result, errorTask.Result);
     }
 
     private static string GetAssemblyMetadata(string key)
@@ -101,14 +140,16 @@ public class ReleaseSmokeTests
     }
 }
 
-file sealed class CvStaticHarness : IAsyncDisposable
+sealed class CvStaticHarness : IAsyncDisposable
 {
     private readonly WebApplication _app;
+    private readonly string _hostRoot;
 
-    private CvStaticHarness(WebApplication app, string baseUrl)
+    private CvStaticHarness(WebApplication app, string baseUrl, string hostRoot)
     {
         _app = app;
         BaseUrl = baseUrl;
+        _hostRoot = hostRoot;
     }
 
     public string BaseUrl { get; }
@@ -116,8 +157,11 @@ file sealed class CvStaticHarness : IAsyncDisposable
     public static async Task<CvStaticHarness> StartAsync(string publishedWwwroot)
     {
         var builder = WebApplication.CreateBuilder();
-        var port = GetOpenPort();
-        builder.WebHost.UseUrls($"http://127.0.0.1:{port}");
+        builder.WebHost.UseUrls("http://127.0.0.1:0");
+
+        var hostRoot = Path.Combine(Path.GetTempPath(), $"cv-smoke-host-{Guid.NewGuid():N}");
+        var cvRoot = Path.Combine(hostRoot, "CV");
+        DirectoryCopy(publishedWwwroot, cvRoot);
 
         var app = builder.Build();
 
@@ -127,49 +171,60 @@ file sealed class CvStaticHarness : IAsyncDisposable
             return Task.CompletedTask;
         });
 
-        app.Map("/CV", cvApp =>
+        app.UseStaticFiles(new StaticFileOptions
         {
-            var fileProvider = new PhysicalFileProvider(publishedWwwroot);
-            cvApp.UseStaticFiles(new StaticFileOptions
-            {
-                FileProvider = fileProvider
-            });
+            FileProvider = new PhysicalFileProvider(hostRoot),
+            ServeUnknownFileTypes = true,
+            DefaultContentType = "application/octet-stream"
+        });
 
-            cvApp.Run(async context =>
+        app.MapFallback(async context =>
+        {
+            var path = context.Request.Path.Value ?? string.Empty;
+            if (!path.StartsWith("/CV", StringComparison.OrdinalIgnoreCase))
             {
-                var path = context.Request.Path.Value ?? string.Empty;
-                if (Path.HasExtension(path))
-                {
-                    context.Response.StatusCode = StatusCodes.Status404NotFound;
-                    return;
-                }
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                return;
+            }
 
-                context.Response.ContentType = "text/html; charset=utf-8";
-                await context.Response.SendFileAsync(Path.Combine(publishedWwwroot, "index.html"));
-            });
+            context.Response.ContentType = "text/html; charset=utf-8";
+            await context.Response.SendFileAsync(Path.Combine(cvRoot, "index.html"));
         });
 
         await app.StartAsync();
-        return new CvStaticHarness(app, $"http://127.0.0.1:{port}");
+        var boundAddress = app.Urls.Single(url => url.StartsWith("http://127.0.0.1:", StringComparison.OrdinalIgnoreCase));
+        return new CvStaticHarness(app, boundAddress, hostRoot);
     }
 
     public async ValueTask DisposeAsync()
     {
         await _app.StopAsync();
         await _app.DisposeAsync();
+        if (Directory.Exists(_hostRoot))
+            Directory.Delete(_hostRoot, recursive: true);
     }
 
-    private static int GetOpenPort()
+    private static void DirectoryCopy(string sourceDir, string destinationDir)
     {
-        var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
-        listener.Start();
-        var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
-        listener.Stop();
-        return port;
+        var source = new DirectoryInfo(sourceDir);
+        if (!source.Exists)
+            throw new DirectoryNotFoundException($"Source directory not found: {sourceDir}");
+
+        Directory.CreateDirectory(destinationDir);
+
+        foreach (var file in source.GetFiles())
+        {
+            file.CopyTo(Path.Combine(destinationDir, file.Name), overwrite: true);
+        }
+
+        foreach (var subDirectory in source.GetDirectories())
+        {
+            DirectoryCopy(subDirectory.FullName, Path.Combine(destinationDir, subDirectory.Name));
+        }
     }
 }
 
-file sealed record BuildResult(int ExitCode, string Output, string Error, string OutputDirectory) : IDisposable
+sealed record BuildResult(int ExitCode, string Output, string Error, string OutputDirectory) : IDisposable
 {
     public bool Succeeded => ExitCode == 0;
 
