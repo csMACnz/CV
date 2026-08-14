@@ -77,3 +77,30 @@ jobs:
       - name: Run Debug tracer tests
         run: dotnet test tests/TracerTests/TracerTests.csproj --filter "FullyQualifiedName~DebugTracerTests" --logger "console;verbosity=normal" --nologo
         timeout-minutes: 10
+
+  smoke-tests-release-playwright:
+    name: Smoke Tests (Release Playwright)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build SmokeTests project
+        run: dotnet build tests/SmokeTests/SmokeTests.csproj --nologo
+
+      - name: Install Playwright browser
+        run: pwsh tests/SmokeTests/bin/Debug/net8.0/playwright.ps1 install --with-deps chromium
+
+      - name: Run Release smoke tests
+        run: dotnet test tests/SmokeTests/SmokeTests.csproj --logger "console;verbosity=normal" --nologo
+        timeout-minutes: 20

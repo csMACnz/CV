@@ -6,6 +6,7 @@
     <Project Path="src/CVApp/CVApp.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/SmokeTests/SmokeTests.csproj" />
     <Project Path="tests/TracerTests/TracerTests.csproj" />
   </Folder>
 </Solution>

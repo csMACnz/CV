@@ -41,13 +41,13 @@ jobs:
 
       - name: Publish (Release)
         # GitHub Pages for this repository is served from https://csmacnz.github.io/CV/
-        # BlazorWebAssemblyBaseHref sets the <base href="/CV/"> so all asset and route
-        # paths are resolved correctly under the /CV/ sub-path.
+        # ReleaseBaseHref updates the published index.html <base href> to /CV/ so all
+        # asset and route paths are resolved correctly under the /CV/ sub-path.
         run: >
           dotnet publish src/CVApp/CVApp.csproj
           -c Release
           --nologo
-          -p:BlazorWebAssemblyBaseHref=/CV/
+          -p:ReleaseBaseHref=/CV/
           -o publish
 
       - name: Verify experience.json artifact
