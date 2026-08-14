@@ -1,0 +1,43 @@
+@using CVApp.Services
+
+<div class="timeline-card">
+    <div class="timeline-card__header">
+        <h2 class="timeline-card__company">@Entry.Company</h2>
+        @if (!string.IsNullOrWhiteSpace(Entry.Period))
+        {
+            <p class="timeline-card__period">@Entry.Period</p>
+        }
+        @if (!string.IsNullOrWhiteSpace(Entry.Location))
+        {
+            <p class="timeline-card__location">@Entry.Location</p>
+        }
+    </div>
+    <div class="timeline-card__roles">
+        @foreach (var role in Entry.Roles)
+        {
+            <div class="timeline-card__role">
+                <h3 class="timeline-card__role-title">@role.Title</h3>
+                @if (!string.IsNullOrWhiteSpace(role.Start) || !string.IsNullOrWhiteSpace(role.End))
+                {
+                    <p class="timeline-card__role-period">
+                        @(string.IsNullOrWhiteSpace(role.Start) ? string.Empty : role.Start)
+                        @if (!string.IsNullOrWhiteSpace(role.Start) && !string.IsNullOrWhiteSpace(role.End))
+                        {
+                            <span>–</span>
+                        }
+                        @(string.IsNullOrWhiteSpace(role.End) ? "Present" : role.End)
+                    </p>
+                }
+                @foreach (var project in role.Projects)
+                {
+                    <ProjectCard Project="@project" />
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public TimelineEntry Entry { get; set; } = default!;
+}
