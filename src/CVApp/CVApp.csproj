@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ContentRoot>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..', '..', 'content'))</ContentRoot>
     <ExperienceJsonOutput>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', 'wwwroot', 'data', 'experience.json'))</ExperienceJsonOutput>
+    <ReleaseBaseHref Condition="'$(ReleaseBaseHref)' == ''">/</ReleaseBaseHref>
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,6 +38,14 @@
     <Error Condition="!Exists('$(ExperienceJsonOutput)')"
            Text="Publish verification failed: expected artifact not found at '$(ExperienceJsonOutput)'. The experience.json payload must be produced by the aggregation step before publishing." />
     <Message Importance="high" Text="Publish verification passed: $(ExperienceJsonOutput) exists." />
+  </Target>
+
+  <Target Name="ApplyReleaseBaseHref" AfterTargets="Publish" Condition="'$(Configuration)' == 'Release'">
+    <PropertyGroup>
+      <PublishedIndexPath>$([MSBuild]::NormalizePath('$(PublishDir)', 'wwwroot', 'index.html'))</PublishedIndexPath>
+    </PropertyGroup>
+    <XmlPoke XmlInputPath="$(PublishedIndexPath)" Query="/html/head/base/@href" Value="$(ReleaseBaseHref)" />
+    <Message Importance="high" Text="Updated published index base href to '$(ReleaseBaseHref)' at '$(PublishedIndexPath)'." />
   </Target>
 
 </Project>
