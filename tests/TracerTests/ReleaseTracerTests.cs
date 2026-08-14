@@ -65,8 +65,14 @@ public class ReleaseTracerTests
 
         // Validate the file parses as valid JSON with the expected root structure
         using var doc = System.Text.Json.JsonDocument.Parse(content);
+        Assert.True(doc.RootElement.TryGetProperty("profile", out var profile),
+            $"experience.json must contain a 'profile' root property.\nActual content:\n{content}");
         Assert.True(doc.RootElement.TryGetProperty("timeline", out _),
             $"experience.json must contain a 'timeline' root property.\nActual content:\n{content}");
+        Assert.True(profile.TryGetProperty("name", out _),
+            $"experience.json profile must contain a 'name' property.\nActual content:\n{content}");
+        Assert.True(profile.TryGetProperty("links", out _),
+            $"experience.json profile must contain a 'links' property.\nActual content:\n{content}");
     }
 
     [Fact]

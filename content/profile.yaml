@@ -1,0 +1,14 @@
+name: Casey Mac
+title: Senior Software Engineer
+bio: Builds resilient .NET platforms, developer tooling, and polished portfolio experiences for technical audiences.
+location: Aotearoa New Zealand
+links:
+  - label: Email
+    url: mailto:casey@example.com
+    iconKey: email
+  - label: GitHub
+    url: https://github.com/csmacnz
+    iconKey: github
+  - label: Website
+    url: https://csmac.nz
+    iconKey: link

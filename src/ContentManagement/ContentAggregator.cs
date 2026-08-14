@@ -16,6 +16,21 @@ public static class ContentAggregator
             .WithNamingConvention(CamelCaseNamingConvention.Instance)
             .IgnoreUnmatchedProperties()
             .Build();
+        var profilePath = Path.Combine(contentRoot, "profile.yaml");
+        if (!File.Exists(profilePath))
+            throw new FileNotFoundException("Expected profile content file was not found.", profilePath);
+
+        var profileData = deserializer.Deserialize<ProfileData>(File.ReadAllText(profilePath));
+        var profile = new Profile(
+            profileData.Name ?? throw new InvalidOperationException("Profile name is required."),
+            profileData.Title ?? throw new InvalidOperationException("Profile title is required."),
+            profileData.Bio ?? throw new InvalidOperationException("Profile bio is required."),
+            profileData.Location ?? throw new InvalidOperationException("Profile location is required."),
+            profileData.Links?.Select(link => new ContactLink(
+                link.Label ?? throw new InvalidOperationException("Profile link label is required."),
+                link.Url ?? throw new InvalidOperationException("Profile link URL is required."),
+                link.IconKey ?? string.Empty))
+                .ToList() ?? []);
 
         var employmentRoot = Path.Combine(contentRoot, "employment");
         var timelineEntries = new List<TimelineEntry>();
@@ -73,6 +88,6 @@ public static class ContentAggregator
             }
         }
 
-        return new ExperiencePayload(timelineEntries);
+        return new ExperiencePayload(profile, timelineEntries);
     }
 }
