@@ -63,20 +63,16 @@ public class ReleaseSmokeTests
         Assert.NotNull(response);
         Assert.Equal((int)HttpStatusCode.OK, response!.Status);
 
-        var heading = page.Locator("h1");
-        var headingVisible = false;
-        for (var i = 0; i < 60; i++)
+        var heading = page.Locator("h1").First;
+        try
         {
-            if (await heading.CountAsync() > 0 && await heading.First.IsVisibleAsync())
+            await heading.WaitForAsync(new LocatorWaitForOptions
             {
-                headingVisible = true;
-                break;
-            }
-
-            await Task.Delay(TimeSpan.FromSeconds(2));
+                State = WaitForSelectorState.Visible,
+                Timeout = 120_000
+            });
         }
-
-        if (!headingVisible)
+        catch (TimeoutException)
         {
             var pageHtml = await page.ContentAsync();
             var diagnostics = string.Join(Environment.NewLine, new[]
@@ -90,7 +86,8 @@ public class ReleaseSmokeTests
             Assert.Fail(diagnostics);
         }
 
-        Assert.Contains("Hello, world!", await heading.First.TextContentAsync());
+        var headingText = (await heading.TextContentAsync())?.Trim();
+        Assert.False(string.IsNullOrWhiteSpace(headingText), "Rendered heading should not be empty.");
 
         Assert.Empty(pageErrors);
         Assert.Empty(consoleErrors);

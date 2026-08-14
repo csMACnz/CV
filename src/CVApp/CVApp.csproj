@@ -44,13 +44,7 @@
     <PropertyGroup>
       <PublishedIndexPath>$([MSBuild]::NormalizePath('$(PublishDir)', 'wwwroot', 'index.html'))</PublishedIndexPath>
     </PropertyGroup>
-    <ReadLinesFromFile File="$(PublishedIndexPath)">
-      <Output TaskParameter="Lines" ItemName="PublishedIndexHtmlLines" />
-    </ReadLinesFromFile>
-    <ItemGroup>
-      <PublishedIndexUpdatedLines Include="@(PublishedIndexHtmlLines->Replace('&lt;base href=&quot;/&quot; /&gt;', '&lt;base href=&quot;$(ReleaseBaseHref)&quot; /&gt;'))" />
-    </ItemGroup>
-    <WriteLinesToFile File="$(PublishedIndexPath)" Lines="@(PublishedIndexUpdatedLines)" Overwrite="true" />
+    <XmlPoke XmlInputPath="$(PublishedIndexPath)" Query="/html/head/base/@href" Value="$(ReleaseBaseHref)" />
     <Message Importance="high" Text="Updated published index base href to '$(ReleaseBaseHref)' at '$(PublishedIndexPath)'." />
   </Target>
 
