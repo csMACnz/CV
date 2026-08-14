@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://csmac.nz/schemas/compiled/experience.schema.json",
+  "title": "Compiled Experience Payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["timeline"],
+  "properties": {
+    "timeline": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/timelineEntry"
+      }
+    }
+  },
+  "definitions": {
+    "timelineEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["company", "roles"],
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "period": {
+          "type": "string",
+          "minLength": 1
+        },
+        "location": {
+          "type": "string",
+          "minLength": 1
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/role"
+          }
+        }
+      }
+    },
+    "role": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "projects"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "start": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"
+        },
+        "end": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"
+        },
+        "projects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/project"
+          }
+        }
+      }
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "skills", "narrative"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "narrative": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

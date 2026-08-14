@@ -77,6 +77,14 @@ Production builds automatically run a pre-compilation step that aggregates all m
 dotnet publish src/CVApp/CVApp.csproj -c Release -o output
 ```
 
+### Local Schema Validation
+
+Run schema validation for both source content files and the compiled `experience.json` artifact:
+
+```bash
+pwsh ./scripts/validate-schema.ps1
+```
+
 Deploy the resulting `output/wwwroot` folder directly to GitHub Pages.
 
 ## Architectural Decisions
