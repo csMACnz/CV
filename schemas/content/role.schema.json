@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://csmac.nz/schemas/content/role.schema.json",
   "title": "Role Content",
   "type": "object",

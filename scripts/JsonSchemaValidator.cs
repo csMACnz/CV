@@ -33,10 +33,23 @@ internal static class JsonSchemaValidatorApp
             return 1;
         }
 
-        var files = ResolveFiles(options);
+        var files = ResolveFiles(options, out var missingExplicitFiles);
+        foreach (var missingFile in missingExplicitFiles)
+        {
+            Console.Error.WriteLine($"Explicit file argument not found: {missingFile}");
+        }
+
         if (files.Count == 0)
         {
-            Console.Error.WriteLine("No files matched the provided --glob/--file arguments.");
+            if (options.Files.Count > 0 && options.Globs.Count == 0)
+            {
+                Console.Error.WriteLine("No explicit --file arguments resolved to existing files.");
+            }
+            else
+            {
+                Console.Error.WriteLine("No files matched the provided --glob/--file arguments.");
+            }
+
             return 1;
         }
 
@@ -118,9 +131,10 @@ internal static class JsonSchemaValidatorApp
         return 1;
     }
 
-    private static HashSet<string> ResolveFiles(ValidatorOptions options)
+    private static HashSet<string> ResolveFiles(ValidatorOptions options, out List<string> missingExplicitFiles)
     {
-        var files = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var files = new HashSet<string>(StringComparer.Ordinal);
+        missingExplicitFiles = [];
 
         foreach (var fileArg in options.Files)
         {
@@ -129,6 +143,10 @@ internal static class JsonSchemaValidatorApp
             {
                 files.Add(fullPath);
             }
+            else
+            {
+                missingExplicitFiles.Add(fullPath);
+            }
         }
 
         if (options.Globs.Count == 0)
@@ -136,7 +154,7 @@ internal static class JsonSchemaValidatorApp
             return files;
         }
 
-        var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+        var matcher = new Matcher(StringComparison.Ordinal);
         foreach (var pattern in options.Globs)
         {
             matcher.AddInclude(pattern.Replace('\\', '/'));

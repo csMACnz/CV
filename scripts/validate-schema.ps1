@@ -1,5 +1,5 @@
 #!/usr/bin/env pwsh
-<#!
+<#
 .SYNOPSIS
 Validates content source files and compiled experience JSON with JSON Schema.
 
@@ -88,7 +88,7 @@ foreach ($check in $compiledChecks) {
 }
 
 if ($failed) {
-    Write-Error 'Schema validation failed.'
+    [Console]::Error.WriteLine('Schema validation failed.')
     exit 1
 }
 
