@@ -4,7 +4,9 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Playwright;
 
@@ -122,8 +124,7 @@ public class ReleaseSmokeTests
 
         var outputTask = process.StandardOutput.ReadToEndAsync();
         var errorTask = process.StandardError.ReadToEndAsync();
-        await process.WaitForExitAsync();
-        await Task.WhenAll(outputTask, errorTask);
+        await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync());
 
         return (process.ExitCode, outputTask.Result, errorTask.Result);
     }
@@ -189,7 +190,10 @@ sealed class CvStaticHarness : IAsyncDisposable
         });
 
         await app.StartAsync();
-        var boundAddress = app.Urls.Single(url => url.StartsWith("http://127.0.0.1:", StringComparison.OrdinalIgnoreCase));
+        var addressesFeature = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>();
+        var boundAddress = addressesFeature?.Addresses
+            .Single(url => url.StartsWith("http://127.0.0.1:", StringComparison.OrdinalIgnoreCase))
+            ?? throw new InvalidOperationException("Failed to resolve bound local server address.");
         return new CvStaticHarness(app, boundAddress, hostRoot);
     }
 

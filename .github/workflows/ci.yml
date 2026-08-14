@@ -96,7 +96,7 @@ jobs:
         run: dotnet restore
 
       - name: Build SmokeTests project
-        run: dotnet build tests/SmokeTests/SmokeTests.csproj --nologo
+        run: dotnet build tests/SmokeTests/SmokeTests.csproj -c Debug --nologo
 
       - name: Install Playwright browser
         run: |
@@ -108,5 +108,5 @@ jobs:
           pwsh "$PLAYWRIGHT_SCRIPT" install --with-deps chromium
 
       - name: Run Release smoke tests
-        run: dotnet test tests/SmokeTests/SmokeTests.csproj --logger "console;verbosity=normal" --nologo
+        run: dotnet test tests/SmokeTests/SmokeTests.csproj -c Debug --logger "console;verbosity=normal" --nologo
         timeout-minutes: 20
