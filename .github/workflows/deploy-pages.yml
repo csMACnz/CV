@@ -1,0 +1,91 @@
+name: Deploy to GitHub Pages
+
+# Deploys the Blazor WebAssembly static site to GitHub Pages on every push to main.
+# The site is published at https://csmacnz.github.io/CV/ and serves the
+# experience.json payload at /CV/data/experience.json.
+
+on:
+  push:
+    branches:
+      - main
+  # Allow manual re-deployment from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment; cancel any in-progress run
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build for GitHub Pages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Publish (Release)
+        # GitHub Pages for this repository is served from https://csmacnz.github.io/CV/
+        # BlazorWebAssemblyBaseHref sets the <base href="/CV/"> so all asset and route
+        # paths are resolved correctly under the /CV/ sub-path.
+        run: >
+          dotnet publish src/CVApp/CVApp.csproj
+          -c Release
+          --nologo
+          -p:BlazorWebAssemblyBaseHref=/CV/
+          -o publish
+
+      - name: Verify experience.json artifact
+        # Confirm the aggregated payload was published to the expected path
+        run: |
+          if [ ! -f "publish/wwwroot/data/experience.json" ]; then
+            echo "::error::Publish verification failed: experience.json not found at publish/wwwroot/data/experience.json"
+            exit 1
+          fi
+          echo "Publish verification passed: publish/wwwroot/data/experience.json exists."
+
+      - name: Configure Pages for SPA routing
+        # GitHub Pages serves a 404 page for any unknown path. Blazor's client-side
+        # router handles all navigation, so we copy index.html as 404.html so the
+        # app bootstraps even when a user navigates directly to a deep link (e.g. /CV/experience).
+        run: cp publish/wwwroot/index.html publish/wwwroot/404.html
+
+      - name: Add .nojekyll
+        # Prevent GitHub Pages Jekyll processing, which would strip files whose
+        # names start with an underscore (e.g. _framework/).
+        run: touch publish/wwwroot/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: publish/wwwroot
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
