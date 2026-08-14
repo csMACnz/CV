@@ -1,7 +1,39 @@
 ﻿@page "/"
+@page "/experience"
+@inject ExperienceDataService ExperienceDataService
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Experience</PageTitle>
 
-<h1>Hello, world!</h1>
+@if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+    <p class="experience-shell__status" role="alert">@ErrorMessage</p>
+}
+else if (CvData is null)
+{
+    <p class="experience-shell__status" role="status">Loading experience...</p>
+}
+else
+{
+    <div class="experience-shell">
+        <ProfileHeader Data="@CvData.Profile" />
+    </div>
+}
 
-Welcome to your new app.
+@code {
+    private ExperiencePayload? CvData;
+    private string? ErrorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            CvData = await ExperienceDataService.GetExperienceAsync();
+            if (CvData is null)
+                ErrorMessage = "Experience data is unavailable right now.";
+        }
+        catch
+        {
+            ErrorMessage = "Experience data could not be loaded.";
+        }
+    }
+}

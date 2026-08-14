@@ -4,8 +4,11 @@
   "title": "Compiled Experience Payload",
   "type": "object",
   "additionalProperties": false,
-  "required": ["timeline"],
+  "required": ["profile", "timeline"],
   "properties": {
+    "profile": {
+      "$ref": "#/definitions/profile"
+    },
     "timeline": {
       "type": "array",
       "items": {
@@ -81,6 +84,53 @@
           }
         },
         "narrative": {
+          "type": "string"
+        }
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "title", "bio", "location", "links"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bio": {
+          "type": "string",
+          "minLength": 1
+        },
+        "location": {
+          "type": "string",
+          "minLength": 1
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/contactLink"
+          }
+        }
+      }
+    },
+    "contactLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "url", "iconKey"],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "iconKey": {
           "type": "string"
         }
       }

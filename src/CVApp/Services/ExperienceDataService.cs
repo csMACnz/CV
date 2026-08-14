@@ -1,6 +1,4 @@
 using System.Net.Http.Json;
-using System.Text.Json.Serialization;
-
 namespace CVApp.Services;
 
 public class ExperienceDataService
@@ -28,7 +26,9 @@ public class ExperienceDataService
     }
 }
 
-public record ExperiencePayload(IReadOnlyList<TimelineEntry> Timeline);
+public record ExperiencePayload(Profile Profile, IReadOnlyList<TimelineEntry> Timeline);
+public record Profile(string Name, string Title, string Bio, string Location, IReadOnlyList<ContactLink> Links);
+public record ContactLink(string Label, string Url, string IconKey);
 public record TimelineEntry(string Company, string? Period, string? Location, IReadOnlyList<Role> Roles);
 public record Role(string Title, string? Start, string? End, IReadOnlyList<Project> Projects);
 public record Project(string Name, IReadOnlyList<string> Skills, string Narrative);

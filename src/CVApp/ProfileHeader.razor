@@ -1,0 +1,58 @@
+<section class="profile-header">
+    <div class="profile-header__content">
+        <p class="profile-header__eyebrow">Experience</p>
+        <h1>@Data.Name</h1>
+        <p class="profile-header__title">@Data.Title</p>
+        <p class="profile-header__bio">@Data.Bio</p>
+
+        <div class="profile-header__meta">
+            <p class="profile-header__location">@Data.Location</p>
+            @if (_safeLinks.Count > 0)
+            {
+                <ul class="profile-header__links" aria-label="Contact and social links">
+                    @foreach (var link in _safeLinks)
+                    {
+                        <li>
+                            <a href="@link.Url"
+                               target="@(link.OpensInNewTab ? "_blank" : null)"
+                               rel="@(link.OpensInNewTab ? "noopener noreferrer" : null)"
+                               aria-label="@link.AriaLabel">@link.Label</a>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+</section>
+
+@code {
+    private List<ProfileLinkViewModel> _safeLinks = [];
+
+    [Parameter, EditorRequired]
+    public Profile Data { get; set; } = default!;
+
+    protected override void OnParametersSet()
+    {
+        _safeLinks = Data.Links
+            .Select(CreateSafeLink)
+            .Where(link => link is not null)
+            .Cast<ProfileLinkViewModel>()
+            .ToList();
+    }
+
+    private static ProfileLinkViewModel? CreateSafeLink(ContactLink link)
+    {
+        if (!Uri.TryCreate(link.Url, UriKind.Absolute, out var uri) ||
+            uri.Scheme is not ("https" or "http" or "mailto"))
+            return null;
+
+        var opensInNewTab = uri.Scheme is "https" or "http";
+        return new ProfileLinkViewModel(
+            link.Label,
+            link.Url,
+            opensInNewTab,
+            opensInNewTab ? $"{link.Label} (opens in new tab)" : link.Label);
+    }
+
+    private sealed record ProfileLinkViewModel(string Label, string Url, bool OpensInNewTab, string AriaLabel);
+}

@@ -15,7 +15,7 @@ namespace SmokeTests;
 public class ReleaseSmokeTests
 {
     [Fact]
-    public async Task ReleasePublishArtifacts_LoadInHostedCvPath_WithoutBlazorErrorUi()
+    public async Task ReleasePublishArtifacts_RenderProfileHeaderAtRootAndExperienceRoutes()
     {
         using var publish = await RunDotnetPublishReleaseAsync();
         Assert.True(publish.Succeeded,
@@ -57,7 +57,25 @@ public class ReleaseSmokeTests
                 consoleErrors.Add(message.Text);
         };
 
-        var response = await page.GotoAsync($"{harness.BaseUrl}/CV/", new PageGotoOptions
+        await AssertProfileHeaderAsync(page, $"{harness.BaseUrl}/CV/", pageErrors, consoleErrors, failedRequests);
+        await AssertProfileHeaderAsync(page, $"{harness.BaseUrl}/CV/experience", pageErrors, consoleErrors, failedRequests);
+
+        Assert.Empty(pageErrors);
+        Assert.Empty(consoleErrors);
+        Assert.Empty(failedRequests.Where(r => r.Contains("/CV/_framework/", StringComparison.OrdinalIgnoreCase)));
+
+        var blazorErrorUiVisible = await page.Locator("#blazor-error-ui").IsVisibleAsync();
+        Assert.False(blazorErrorUiVisible, "Blazor error UI is visible, indicating app startup failure.");
+    }
+
+    private static async Task AssertProfileHeaderAsync(
+        IPage page,
+        string url,
+        List<string> pageErrors,
+        List<string> consoleErrors,
+        List<string> failedRequests)
+    {
+        var response = await page.GotoAsync(url, new PageGotoOptions
         {
             WaitUntil = WaitUntilState.NetworkIdle
         });
@@ -79,7 +97,7 @@ public class ReleaseSmokeTests
             var pageHtml = await page.ContentAsync();
             var diagnostics = string.Join(Environment.NewLine, new[]
             {
-                "Smoke test failed to render heading within 120 seconds.",
+                $"Smoke test failed to render heading at {url} within 120 seconds.",
                 $"Page errors: {(pageErrors.Count == 0 ? "(none)" : string.Join(" | ", pageErrors))}",
                 $"Console errors: {(consoleErrors.Count == 0 ? "(none)" : string.Join(" | ", consoleErrors))}",
                 $"Failed requests: {(failedRequests.Count == 0 ? "(none)" : string.Join(" | ", failedRequests))}",
@@ -88,15 +106,23 @@ public class ReleaseSmokeTests
             Assert.Fail(diagnostics);
         }
 
-        var headingText = (await heading.TextContentAsync())?.Trim();
-        Assert.False(string.IsNullOrWhiteSpace(headingText), "Rendered heading should not be empty.");
+        await ExpectTextAsync(page.Locator("h1").First, "Casey Mac");
+        await ExpectTextAsync(page.Locator(".profile-header__title").First, "Senior Software Engineer");
+        await ExpectTextAsync(page.Locator(".profile-header__bio").First,
+            "Builds resilient .NET platforms, developer tooling, and polished portfolio experiences for technical audiences.");
+        await ExpectTextAsync(page.Locator(".profile-header__location").First, "Aotearoa New Zealand");
 
-        Assert.Empty(pageErrors);
-        Assert.Empty(consoleErrors);
-        Assert.Empty(failedRequests.Where(r => r.Contains("/CV/_framework/", StringComparison.OrdinalIgnoreCase)));
+        var contactLinks = page.Locator(".profile-header__links a");
+        Assert.Equal(3, await contactLinks.CountAsync());
+        await ExpectTextAsync(contactLinks.Nth(0), "Email");
+        await ExpectTextAsync(contactLinks.Nth(1), "GitHub");
+        await ExpectTextAsync(contactLinks.Nth(2), "Website");
+    }
 
-        var blazorErrorUiVisible = await page.Locator("#blazor-error-ui").IsVisibleAsync();
-        Assert.False(blazorErrorUiVisible, "Blazor error UI is visible, indicating app startup failure.");
+    private static async Task ExpectTextAsync(ILocator locator, string expectedText)
+    {
+        var actualText = (await locator.TextContentAsync())?.Trim();
+        Assert.Equal(expectedText, actualText);
     }
 
     private static async Task<BuildResult> RunDotnetPublishReleaseAsync()
