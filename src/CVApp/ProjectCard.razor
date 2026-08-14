@@ -1,0 +1,23 @@
+@using CVApp.Services
+
+<div class="project-card">
+    <h4 class="project-card__name">@Project.Name</h4>
+    @if (!string.IsNullOrWhiteSpace(Project.Narrative))
+    {
+        <p class="project-card__narrative">@Project.Narrative</p>
+    }
+    @if (Project.Skills.Count > 0)
+    {
+        <ul class="project-card__skills" aria-label="Skills">
+            @foreach (var skill in Project.Skills)
+            {
+                <li class="project-card__skill-pill">@skill</li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Project Project { get; set; } = default!;
+}

@@ -1,0 +1,13 @@
+@using CVApp.Services
+
+<div class="timeline-feed" aria-label="Experience timeline">
+    @foreach (var entry in Entries)
+    {
+        <TimelineCard Entry="@entry" />
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<TimelineEntry> Entries { get; set; } = default!;
+}
