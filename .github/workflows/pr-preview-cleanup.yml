@@ -41,6 +41,10 @@ jobs:
         run: |
           preview_path="preview/pr-${{ github.event.pull_request.number }}"
 
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin gh-pages
+
           if [ ! -d "$preview_path" ]; then
             echo "No preview found at $preview_path"
             exit 0
@@ -52,8 +56,6 @@ jobs:
             rmdir preview
           fi
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
 
           if git diff --cached --quiet; then

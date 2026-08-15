@@ -142,7 +142,7 @@ public class ReleaseSmokeTests
         var outputDir = Path.Combine(Path.GetTempPath(), $"cv-smoke-publish-{Guid.NewGuid():N}");
         var projectPath = GetAssemblyMetadata("CVAppProjectPath");
         var args =
-            $"publish \"{projectPath}\" -c Release --nologo -o \"{outputDir}\" -p:ReleaseBaseHref={baseHref}";
+            $"publish \"{projectPath}\" -c Release --nologo -o \"{outputDir}\" -p:ReleaseBaseHref=\"{baseHref}\"";
         var result = await RunDotnetAsync(args, GetAssemblyMetadata("RepositoryRoot"));
         return new BuildResult(result.ExitCode, result.Output, result.Error, outputDir);
     }

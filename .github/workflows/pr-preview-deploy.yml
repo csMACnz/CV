@@ -7,17 +7,16 @@ on:
       - synchronize
       - reopened
 
-permissions:
-  contents: write
-
 concurrency:
   group: pages-preview-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  deploy-preview:
-    name: Build and deploy PR preview
+  build-preview:
+    name: Build PR preview
     if: github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -53,11 +52,33 @@ jobs:
       - name: Add .nojekyll
         run: touch publish/wwwroot/.nojekyll
 
+      - name: Upload preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-preview-${{ github.event.pull_request.number }}
+          path: publish/wwwroot
+
+  deploy-preview:
+    name: Deploy PR preview
+    needs: build-preview
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download preview artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-preview-${{ github.event.pull_request.number }}
+          path: preview-site
+
       - name: Deploy preview to gh-pages
         uses: JamesIves/github-pages-deploy-action@v4.7.3
         with:
           branch: gh-pages
-          folder: publish/wwwroot
+          folder: preview-site
           target-folder: preview/pr-${{ github.event.pull_request.number }}
           force: false
           commit-message: "Deploy PR preview for #${{ github.event.pull_request.number }} from ${{ github.sha }}"
