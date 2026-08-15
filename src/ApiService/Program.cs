@@ -1,6 +1,4 @@
 #if DEBUG
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using ContentManagement;
 #endif
 
@@ -19,8 +17,7 @@ var app = builder.Build();
 #if DEBUG
 app.UseCors();
 
-var camelCaseOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-var indentedCamelCaseOptions = new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+var cvDataSourceStore = new CvDataSourceFileStore();
 
 // ADR-008 / ADR-010: Serve aggregated experience data from the local content directory.
 // ContentRoot config key lets the Aspire AppHost override the default path.
@@ -32,36 +29,95 @@ app.MapGet("/experience", (IConfiguration config, IWebHostEnvironment env) =>
 
 // ADR-004 / ADR-011: Admin aggregate read endpoint — returns the full CvDataSource graph
 // for the local Admin UI. Bound exclusively to localhost via .NET Aspire service discovery.
-app.MapGet("/api/admin/cv", (IConfiguration config, IWebHostEnvironment env) =>
+app.MapGet("/api/admin/cv", async (IConfiguration config, IWebHostEnvironment env) =>
 {
-    var payload = ContentAggregator.Aggregate(ResolveContentRoot(config, env));
-    return Results.Ok(payload);
+    var cvDataSource = await cvDataSourceStore.LoadAsync(
+        ResolveCvDataSourcePath(config, env),
+        () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)));
+    return Results.Ok(cvDataSource);
 });
 
 // ADR-004 / ADR-011: Admin profile write endpoint — updates only the Profile graph inside
 // wwwroot/data/cv-datasource.json without disturbing other root keys (SkillMatrix, Timeline).
 app.MapPut("/api/admin/profile", async (Profile profile, IConfiguration config, IWebHostEnvironment env) =>
 {
-    var path = ResolveCvDataSourcePath(config, env);
-    Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+    return await ExecuteMutationAsync(() =>
+        cvDataSourceStore.UpdateProfileAsync(
+            ResolveCvDataSourcePath(config, env),
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
+            profile));
+});
 
-    JsonObject root;
-    try
-    {
-        var existing = await File.ReadAllTextAsync(path);
-        root = JsonNode.Parse(existing)?.AsObject() ?? new JsonObject();
-    }
-    catch (FileNotFoundException)
-    {
-        root = new JsonObject();
-    }
+app.MapPost("/api/admin/skills/categories", async (CreateSkillCategoryRequest request, IConfiguration config, IWebHostEnvironment env) =>
+{
+    return await ExecuteMutationAsync(() =>
+        cvDataSourceStore.AddSkillCategoryAsync(
+            ResolveCvDataSourcePath(config, env),
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
+            request.Name));
+});
 
-    root["profile"] = JsonSerializer.SerializeToNode(profile, camelCaseOptions);
+app.MapPut("/api/admin/skills/categories/{categoryName}", async (
+    string categoryName,
+    RenameSkillCategoryRequest request,
+    IConfiguration config,
+    IWebHostEnvironment env) =>
+{
+    return await ExecuteMutationAsync(() =>
+        cvDataSourceStore.RenameSkillCategoryAsync(
+            ResolveCvDataSourcePath(config, env),
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
+            categoryName,
+            request.NewName));
+});
 
-    var updated = root.ToJsonString(indentedCamelCaseOptions);
-    await File.WriteAllTextAsync(path, updated);
+app.MapDelete("/api/admin/skills/categories/{categoryName}", async (
+    string categoryName,
+    IConfiguration config,
+    IWebHostEnvironment env) =>
+{
+    return await ExecuteMutationAsync(() =>
+        cvDataSourceStore.DeleteSkillCategoryAsync(
+            ResolveCvDataSourcePath(config, env),
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
+            categoryName));
+});
 
-    return Results.Ok();
+app.MapPost("/api/admin/skills", async (CreateSkillRequest request, IConfiguration config, IWebHostEnvironment env) =>
+{
+    return await ExecuteMutationAsync(() =>
+        cvDataSourceStore.AddSkillAsync(
+            ResolveCvDataSourcePath(config, env),
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
+            request.CategoryName,
+            new Skill(request.Id, request.Name, request.Url)));
+});
+
+app.MapPut("/api/admin/skills/{skillId}", async (
+    string skillId,
+    UpdateSkillRequest request,
+    IConfiguration config,
+    IWebHostEnvironment env) =>
+{
+    return await ExecuteMutationAsync(() =>
+        cvDataSourceStore.UpdateSkillAsync(
+            ResolveCvDataSourcePath(config, env),
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
+            skillId,
+            request.Name,
+            request.Url));
+});
+
+app.MapDelete("/api/admin/skills/{skillId}", async (
+    string skillId,
+    IConfiguration config,
+    IWebHostEnvironment env) =>
+{
+    return await ExecuteMutationAsync(() =>
+        cvDataSourceStore.DeleteSkillAsync(
+            ResolveCvDataSourcePath(config, env),
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
+            skillId));
 });
 
 static string ResolveContentRoot(IConfiguration config, IWebHostEnvironment env) =>
@@ -71,6 +127,28 @@ static string ResolveContentRoot(IConfiguration config, IWebHostEnvironment env)
 static string ResolveCvDataSourcePath(IConfiguration config, IWebHostEnvironment env) =>
     config["CvDataSourcePath"]
     ?? Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", "CVApp", "wwwroot", "data", "cv-datasource.json"));
+
+static async Task<IResult> ExecuteMutationAsync(Func<Task> action)
+{
+    try
+    {
+        await action();
+        return Results.Ok();
+    }
+    catch (ArgumentException ex)
+    {
+        return Results.BadRequest(ex.Message);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.BadRequest(ex.Message);
+    }
+    catch (KeyNotFoundException ex)
+    {
+        return Results.NotFound(ex.Message);
+    }
+}
+
 #endif
 
 app.Run();

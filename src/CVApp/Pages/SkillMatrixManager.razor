@@ -1,0 +1,252 @@
+@* ADR-004 / ADR-011: Skill matrix manager — excluded from Release builds via CVApp.csproj.
+   This component is only compiled in Debug (local Aspire) mode. *@
+@using CVApp.Services
+
+<section class="admin-skill-matrix-form">
+    <h2>Skill Matrix</h2>
+
+    @if (_busy)
+    {
+        <p>Saving&hellip;</p>
+    }
+    else if (_errorMessage is not null)
+    {
+        <p class="text-danger">@_errorMessage</p>
+    }
+    else if (_successMessage is not null)
+    {
+        <p class="text-success">@_successMessage</p>
+    }
+
+    <div class="admin-skill-category-create">
+        <label for="new-skill-category">New category</label>
+        <input id="new-skill-category" type="text" @bind="_newCategoryName" />
+        <button type="button" @onclick="AddCategoryAsync">Add Category</button>
+    </div>
+
+    @for (var i = 0; i < _categories.Count; i++)
+    {
+        var category = _categories[i];
+        var categoryIndex = i;
+
+        <section class="admin-skill-category">
+            <div class="admin-skill-category__header">
+                <input type="text" @bind="category.Name" />
+                <button type="button" @onclick="() => RenameCategoryAsync(categoryIndex)">Rename</button>
+                <button type="button" @onclick="() => DeleteCategoryAsync(categoryIndex)">Delete Category</button>
+            </div>
+
+            <div class="admin-skill-category__create">
+                <input type="text" placeholder="Skill ID" @bind="category.NewSkillId" />
+                <input type="text" placeholder="Skill name" @bind="category.NewSkillName" />
+                <input type="text" placeholder="Documentation URL" @bind="category.NewSkillUrl" />
+                <button type="button" @onclick="() => AddSkillAsync(categoryIndex)">Add Skill</button>
+            </div>
+
+            @for (var j = 0; j < category.Skills.Count; j++)
+            {
+                var skill = category.Skills[j];
+                var skillIndex = j;
+
+                <div class="admin-skill-row">
+                    <input type="text" value="@skill.Id" readonly />
+                    <input type="text" @bind="skill.Name" />
+                    <input type="text" @bind="skill.Url" />
+                    <button type="button" @onclick="() => SaveSkillAsync(categoryIndex, skillIndex)">Save Skill</button>
+                    <button type="button" @onclick="() => DeleteSkillAsync(categoryIndex, skillIndex)">Delete Skill</button>
+                </div>
+            }
+        </section>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<AdminSkillGroup> InitialSkillMatrix { get; set; } = [];
+    [Inject] private ICvAdminStoreService AdminStore { get; set; } = default!;
+
+    private List<EditableSkillGroup> _categories = [];
+    private IReadOnlyList<AdminSkillGroup>? _lastSeenSkillMatrix;
+    private string _newCategoryName = string.Empty;
+    private bool _busy;
+    private string? _successMessage;
+    private string? _errorMessage;
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_lastSeenSkillMatrix, InitialSkillMatrix))
+            return;
+
+        _lastSeenSkillMatrix = InitialSkillMatrix;
+        _categories = InitialSkillMatrix
+            .Select(group => new EditableSkillGroup
+            {
+                OriginalName = group.Name,
+                Name = group.Name,
+                Skills = group.Skills
+                    .Select(skill => new EditableSkill
+                    {
+                        Id = skill.Id,
+                        Name = skill.Name,
+                        Url = skill.Url ?? string.Empty
+                    })
+                    .ToList()
+            })
+            .ToList();
+    }
+
+    private async Task AddCategoryAsync()
+    {
+        var categoryName = _newCategoryName.Trim();
+        if (string.IsNullOrWhiteSpace(categoryName))
+        {
+            _successMessage = null;
+            _errorMessage = "Category name is required.";
+            return;
+        }
+
+        await ExecuteAsync(
+            () => AdminStore.AddSkillCategoryAsync(categoryName),
+            () =>
+            {
+                _categories.Add(new EditableSkillGroup
+                {
+                    OriginalName = categoryName,
+                    Name = categoryName
+                });
+                _newCategoryName = string.Empty;
+            },
+            $"Category '{categoryName}' added.");
+    }
+
+    private async Task RenameCategoryAsync(int categoryIndex)
+    {
+        var category = _categories[categoryIndex];
+        var originalName = category.OriginalName;
+        var updatedName = category.Name.Trim();
+        if (string.IsNullOrWhiteSpace(updatedName))
+        {
+            _successMessage = null;
+            _errorMessage = "Category name is required.";
+            return;
+        }
+
+        await ExecuteAsync(
+            () => AdminStore.RenameSkillCategoryAsync(originalName, updatedName),
+            () =>
+            {
+                category.Name = updatedName;
+                category.OriginalName = updatedName;
+            },
+            $"Category '{updatedName}' updated.");
+    }
+
+    private async Task DeleteCategoryAsync(int categoryIndex)
+    {
+        var category = _categories[categoryIndex];
+        await ExecuteAsync(
+            () => AdminStore.DeleteSkillCategoryAsync(category.OriginalName),
+            () => _categories.RemoveAt(categoryIndex),
+            $"Category '{category.OriginalName}' deleted.");
+    }
+
+    private async Task AddSkillAsync(int categoryIndex)
+    {
+        var category = _categories[categoryIndex];
+        var skill = new AdminSkillNode(
+            category.NewSkillId.Trim(),
+            category.NewSkillName.Trim(),
+            NormalizeUrl(category.NewSkillUrl));
+        if (string.IsNullOrWhiteSpace(skill.Id) || string.IsNullOrWhiteSpace(skill.Name))
+        {
+            _successMessage = null;
+            _errorMessage = "Skill ID and name are required.";
+            return;
+        }
+
+        await ExecuteAsync(
+            () => AdminStore.AddSkillAsync(category.OriginalName, skill),
+            () =>
+            {
+                category.Skills.Add(new EditableSkill
+                {
+                    Id = skill.Id,
+                    Name = skill.Name,
+                    Url = skill.Url ?? string.Empty
+                });
+                category.NewSkillId = string.Empty;
+                category.NewSkillName = string.Empty;
+                category.NewSkillUrl = string.Empty;
+            },
+            $"Skill '{skill.Id}' added.");
+    }
+
+    private async Task SaveSkillAsync(int categoryIndex, int skillIndex)
+    {
+        var category = _categories[categoryIndex];
+        var skill = category.Skills[skillIndex];
+        var updatedName = skill.Name.Trim();
+        var updatedUrl = NormalizeUrl(skill.Url);
+
+        await ExecuteAsync(
+            () => AdminStore.UpdateSkillAsync(skill.Id, updatedName, updatedUrl),
+            () =>
+            {
+                skill.Name = updatedName;
+                skill.Url = updatedUrl ?? string.Empty;
+            },
+            $"Skill '{skill.Id}' updated.");
+    }
+
+    private async Task DeleteSkillAsync(int categoryIndex, int skillIndex)
+    {
+        var category = _categories[categoryIndex];
+        var skill = category.Skills[skillIndex];
+
+        await ExecuteAsync(
+            () => AdminStore.DeleteSkillAsync(skill.Id),
+            () => category.Skills.RemoveAt(skillIndex),
+            $"Skill '{skill.Id}' deleted.");
+    }
+
+    private async Task ExecuteAsync(Func<Task> action, Action onSuccess, string successMessage)
+    {
+        _busy = true;
+        _successMessage = null;
+        _errorMessage = null;
+
+        try
+        {
+            await action();
+            onSuccess();
+            _successMessage = successMessage;
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private static string? NormalizeUrl(string? url)
+        => string.IsNullOrWhiteSpace(url) ? null : url.Trim();
+
+    private sealed class EditableSkillGroup
+    {
+        public string OriginalName { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string NewSkillId { get; set; } = string.Empty;
+        public string NewSkillName { get; set; } = string.Empty;
+        public string NewSkillUrl { get; set; } = string.Empty;
+        public List<EditableSkill> Skills { get; set; } = [];
+    }
+
+    private sealed class EditableSkill
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
+    }
+}

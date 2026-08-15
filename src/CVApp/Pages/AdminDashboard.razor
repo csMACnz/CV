@@ -25,12 +25,13 @@ else if (_data is not null)
         </ul>
     </section>
     <ProfileEditForm InitialProfile="_data.Profile" />
+    <SkillMatrixManager InitialSkillMatrix="_data.SkillMatrix" />
 }
 
 @code {
     [Inject] private ICvAdminStoreService AdminStore { get; set; } = default!;
 
-    private ExperiencePayload? _data;
+    private CvAdminDataSource? _data;
     private bool _loading = true;
     private string? _error;
 
