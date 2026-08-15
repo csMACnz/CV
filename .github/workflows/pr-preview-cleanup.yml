@@ -1,0 +1,65 @@
+name: Cleanup PR Preview
+
+on:
+  pull_request:
+    types:
+      - closed
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages-preview-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  cleanup-preview:
+    name: Delete PR preview
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout gh-pages branch
+        id: deployment-branch
+        run: |
+          if ! git ls-remote --exit-code --heads origin gh-pages; then
+            echo "gh-pages branch does not exist yet; nothing to clean."
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git fetch origin gh-pages:gh-pages
+          git checkout gh-pages
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+
+      - name: Delete preview folder
+        if: steps.deployment-branch.outputs.exists == 'true'
+        run: |
+          preview_path="preview/pr-${{ github.event.pull_request.number }}"
+
+          if [ ! -d "$preview_path" ]; then
+            echo "No preview found at $preview_path"
+            exit 0
+          fi
+
+          rm -rf "$preview_path"
+
+          if [ -d preview ] && [ -z "$(find preview -mindepth 1 -maxdepth 1 2>/dev/null)" ]; then
+            rmdir preview
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No cleanup changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Remove PR preview for #${{ github.event.pull_request.number }}"
+          git push origin HEAD:gh-pages
