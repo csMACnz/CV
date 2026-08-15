@@ -63,6 +63,7 @@ jobs:
     needs: build-preview
     permissions:
       contents: write
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -82,3 +83,12 @@ jobs:
           target-folder: preview/pr-${{ github.event.pull_request.number }}
           force: false
           commit-message: "Deploy PR preview for #${{ github.event.pull_request.number }} from ${{ github.sha }}"
+
+      - name: Post preview link comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: pr-preview-link
+          message: |
+            ✅ PR preview published.
+
+            [Open preview](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/preview/pr-${{ github.event.pull_request.number }}/)
