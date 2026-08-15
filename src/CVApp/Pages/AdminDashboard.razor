@@ -1,0 +1,59 @@
+@page "/admin"
+@* ADR-004 / ADR-011: Admin dashboard — excluded from Release builds via CVApp.csproj.
+   This file is only compiled in Debug (local Aspire) mode. *@
+@using CVApp.Services
+
+<h1>Admin Dashboard</h1>
+
+@if (_loading)
+{
+    <p>Loading CV data&hellip;</p>
+}
+else if (_error is not null)
+{
+    <p class="text-danger">Failed to load CV data: @_error</p>
+}
+else if (_data is not null)
+{
+    <section>
+        <h2>Profile</h2>
+        <dl>
+            <dt>Name</dt><dd>@_data.Profile.Name</dd>
+            <dt>Title</dt><dd>@_data.Profile.Title</dd>
+            <dt>Location</dt><dd>@_data.Profile.Location</dd>
+        </dl>
+    </section>
+    <section>
+        <h2>Timeline</h2>
+        <ul>
+            @foreach (var entry in _data.Timeline)
+            {
+                <li>@entry.Company (@entry.Period)</li>
+            }
+        </ul>
+    </section>
+}
+
+@code {
+    [Inject] private ICvAdminStoreService AdminStore { get; set; } = default!;
+
+    private ExperiencePayload? _data;
+    private bool _loading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _data = await AdminStore.GetCvDataSourceAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

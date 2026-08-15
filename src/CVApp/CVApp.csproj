@@ -19,6 +19,14 @@
     into a single static experience.json payload for production publishing.
     Runs in Release configuration as part of the Publish pipeline.
   -->
+  <!--
+    ADR-004 / ADR-011: Exclude admin-only Razor components from Release builds entirely.
+    This ensures the /admin route is not registered in production WASM artifacts.
+  -->
+  <ItemGroup Condition="'$(Configuration)' != 'Debug'">
+    <Content Remove="Pages\AdminDashboard.razor" />
+  </ItemGroup>
+
   <Target Name="AggregateExperienceJson" BeforeTargets="BeforeBuild" Condition="'$(Configuration)' == 'Release'">
     <PropertyGroup>
       <AggregationProject>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..', 'Aggregation', 'Aggregation.csproj'))</AggregationProject>

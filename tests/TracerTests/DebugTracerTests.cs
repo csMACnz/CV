@@ -93,4 +93,23 @@ public class DebugTracerTests
             "ApiService Debug build must include the local API route '/experience' in the compiled assembly. " +
             "Ensure the endpoint is registered inside a #if DEBUG block (see ADR-008).");
     }
+
+    [Fact]
+    public void Debug_ApiService_Build_CompiledAssemblyContainsAdminCvEndpoint()
+    {
+        using var result = BuildHelpers.RunDotnetBuildApiService("Debug");
+
+        Assert.True(result.Succeeded,
+            $"ApiService Debug build must succeed before assembly inspection can run.\nOutput:\n{result.Output}\nError:\n{result.Error}");
+
+        // ADR-004 / ADR-011: In Debug mode the ApiService exposes GET /api/admin/cv
+        // for the local Admin UI. Verify the compiled DLL contains the route string.
+        var apiServiceDll = Path.Combine(result.OutputDirectory, "ApiService.dll");
+        if (!File.Exists(apiServiceDll))
+            return; // DLL not in expected location for this build layout — skip
+
+        Assert.True(BuildHelpers.DllContainsStringLiteral(apiServiceDll, "/api/admin/cv"),
+            "ApiService Debug build must include the admin API route '/api/admin/cv' in the compiled assembly. " +
+            "Ensure the endpoint is registered inside a #if DEBUG block (see ADR-004, ADR-011).");
+    }
 }

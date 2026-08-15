@@ -21,12 +21,21 @@ app.UseCors();
 // ContentRoot config key lets the Aspire AppHost override the default path.
 app.MapGet("/experience", (IConfiguration config, IWebHostEnvironment env) =>
 {
-    var contentRoot = config["ContentRoot"]
-        ?? Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", "..", "content"));
-
-    var payload = ContentAggregator.Aggregate(contentRoot);
+    var payload = ContentAggregator.Aggregate(ResolveContentRoot(config, env));
     return Results.Ok(payload);
 });
+
+// ADR-004 / ADR-011: Admin aggregate read endpoint — returns the full CvDataSource graph
+// for the local Admin UI. Bound exclusively to localhost via .NET Aspire service discovery.
+app.MapGet("/api/admin/cv", (IConfiguration config, IWebHostEnvironment env) =>
+{
+    var payload = ContentAggregator.Aggregate(ResolveContentRoot(config, env));
+    return Results.Ok(payload);
+});
+
+static string ResolveContentRoot(IConfiguration config, IWebHostEnvironment env) =>
+    config["ContentRoot"]
+    ?? Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", "..", "content"));
 #endif
 
 app.Run();
