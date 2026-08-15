@@ -120,6 +120,103 @@ app.MapDelete("/api/admin/skills/{skillId}", async (
             skillId));
 });
 
+// ADR-004 / ADR-011: Timeline CRUD endpoints — manage TimelineEntry items and nested
+// Project cards without disturbing Profile or SkillMatrix root keys.
+app.MapPost("/api/admin/timeline", async (CreateTimelineEntryRequest request, IConfiguration config, IWebHostEnvironment env) =>
+{
+    return await ExecuteMutationAsync(() =>
+        cvDataSourceStore.AddTimelineEntryAsync(
+            ResolveCvDataSourcePath(config, env),
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
+            request.Company,
+            request.Period,
+            request.Location,
+            request.RoleTitle,
+            request.Start,
+            request.End));
+});
+
+app.MapPut("/api/admin/timeline/{entryId}", async (
+    string entryId,
+    UpdateTimelineEntryRequest request,
+    IConfiguration config,
+    IWebHostEnvironment env) =>
+{
+    return await ExecuteMutationAsync(() =>
+        cvDataSourceStore.UpdateTimelineEntryAsync(
+            ResolveCvDataSourcePath(config, env),
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
+            entryId,
+            request.Company,
+            request.Period,
+            request.Location,
+            request.RoleTitle,
+            request.Start,
+            request.End));
+});
+
+app.MapDelete("/api/admin/timeline/{entryId}", async (
+    string entryId,
+    IConfiguration config,
+    IWebHostEnvironment env) =>
+{
+    return await ExecuteMutationAsync(() =>
+        cvDataSourceStore.DeleteTimelineEntryAsync(
+            ResolveCvDataSourcePath(config, env),
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
+            entryId));
+});
+
+app.MapPost("/api/admin/timeline/{entryId}/projects", async (
+    string entryId,
+    CreateProjectRequest request,
+    IConfiguration config,
+    IWebHostEnvironment env) =>
+{
+    return await ExecuteMutationAsync(() =>
+        cvDataSourceStore.AddProjectAsync(
+            ResolveCvDataSourcePath(config, env),
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
+            entryId,
+            request.Name,
+            request.BriefSummary,
+            request.Narrative,
+            request.AppliedSkillIds));
+});
+
+app.MapPut("/api/admin/timeline/{entryId}/projects/{projectId}", async (
+    string entryId,
+    string projectId,
+    UpdateProjectRequest request,
+    IConfiguration config,
+    IWebHostEnvironment env) =>
+{
+    return await ExecuteMutationAsync(() =>
+        cvDataSourceStore.UpdateProjectAsync(
+            ResolveCvDataSourcePath(config, env),
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
+            entryId,
+            projectId,
+            request.Name,
+            request.BriefSummary,
+            request.Narrative,
+            request.AppliedSkillIds));
+});
+
+app.MapDelete("/api/admin/timeline/{entryId}/projects/{projectId}", async (
+    string entryId,
+    string projectId,
+    IConfiguration config,
+    IWebHostEnvironment env) =>
+{
+    return await ExecuteMutationAsync(() =>
+        cvDataSourceStore.DeleteProjectAsync(
+            ResolveCvDataSourcePath(config, env),
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
+            entryId,
+            projectId));
+});
+
 static string ResolveContentRoot(IConfiguration config, IWebHostEnvironment env) =>
     config["ContentRoot"]
     ?? Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", "..", "content"));

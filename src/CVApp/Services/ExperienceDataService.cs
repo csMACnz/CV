@@ -31,4 +31,4 @@ public record Profile(string Name, string Title, string Bio, string Location, IR
 public record ContactLink(string Label, string Url, string IconKey);
 public record TimelineEntry(string Company, string? Period, string? Location, IReadOnlyList<Role> Roles);
 public record Role(string Title, string? Start, string? End, IReadOnlyList<Project> Projects);
-public record Project(string Name, IReadOnlyList<string> Skills, string Narrative);
+public record Project(string Name, IReadOnlyList<string> Skills, string Narrative, string? BriefSummary = null);

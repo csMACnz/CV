@@ -49,6 +49,36 @@ public interface ICvAdminStoreService
     /// Deletes an existing skill node via <c>DELETE /api/admin/skills/{skillId}</c>.
     /// </summary>
     Task DeleteSkillAsync(string skillId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Creates a new timeline entry via <c>POST /api/admin/timeline</c>.
+    /// </summary>
+    Task AddTimelineEntryAsync(string company, string? period, string? location, string roleTitle, string? start, string? end, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates an existing timeline entry via <c>PUT /api/admin/timeline/{entryId}</c>.
+    /// </summary>
+    Task UpdateTimelineEntryAsync(string entryId, string company, string? period, string? location, string roleTitle, string? start, string? end, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes a timeline entry via <c>DELETE /api/admin/timeline/{entryId}</c>.
+    /// </summary>
+    Task DeleteTimelineEntryAsync(string entryId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds a new project card to an existing timeline entry via <c>POST /api/admin/timeline/{entryId}/projects</c>.
+    /// </summary>
+    Task AddProjectAsync(string entryId, string name, string? briefSummary, string? narrative, List<string> appliedSkillIds, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates a project card via <c>PUT /api/admin/timeline/{entryId}/projects/{projectId}</c>.
+    /// </summary>
+    Task UpdateProjectAsync(string entryId, string projectId, string name, string? briefSummary, string? narrative, List<string> appliedSkillIds, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes a project card via <c>DELETE /api/admin/timeline/{entryId}/projects/{projectId}</c>.
+    /// </summary>
+    Task DeleteProjectAsync(string entryId, string projectId, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -132,6 +162,64 @@ public class CvAdminStoreService : ICvAdminStoreService
             cancellationToken);
         response.EnsureSuccessStatusCode();
     }
+
+    /// <inheritdoc />
+    public async Task AddTimelineEntryAsync(string company, string? period, string? location, string roleTitle, string? start, string? end, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync(
+            "/api/admin/timeline",
+            new CreateTimelineEntryRequest(company, period, location, roleTitle, start, end),
+            cancellationToken);
+        response.EnsureSuccessStatusCode();
+    }
+
+    /// <inheritdoc />
+    public async Task UpdateTimelineEntryAsync(string entryId, string company, string? period, string? location, string roleTitle, string? start, string? end, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PutAsJsonAsync(
+            $"/api/admin/timeline/{Uri.EscapeDataString(entryId)}",
+            new UpdateTimelineEntryRequest(company, period, location, roleTitle, start, end),
+            cancellationToken);
+        response.EnsureSuccessStatusCode();
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteTimelineEntryAsync(string entryId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.DeleteAsync(
+            $"/api/admin/timeline/{Uri.EscapeDataString(entryId)}",
+            cancellationToken);
+        response.EnsureSuccessStatusCode();
+    }
+
+    /// <inheritdoc />
+    public async Task AddProjectAsync(string entryId, string name, string? briefSummary, string? narrative, List<string> appliedSkillIds, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync(
+            $"/api/admin/timeline/{Uri.EscapeDataString(entryId)}/projects",
+            new CreateProjectRequest(name, briefSummary, narrative, appliedSkillIds),
+            cancellationToken);
+        response.EnsureSuccessStatusCode();
+    }
+
+    /// <inheritdoc />
+    public async Task UpdateProjectAsync(string entryId, string projectId, string name, string? briefSummary, string? narrative, List<string> appliedSkillIds, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PutAsJsonAsync(
+            $"/api/admin/timeline/{Uri.EscapeDataString(entryId)}/projects/{Uri.EscapeDataString(projectId)}",
+            new UpdateProjectRequest(name, briefSummary, narrative, appliedSkillIds),
+            cancellationToken);
+        response.EnsureSuccessStatusCode();
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteProjectAsync(string entryId, string projectId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.DeleteAsync(
+            $"/api/admin/timeline/{Uri.EscapeDataString(entryId)}/projects/{Uri.EscapeDataString(projectId)}",
+            cancellationToken);
+        response.EnsureSuccessStatusCode();
+    }
 }
 
 public record CvAdminDataSource(Profile Profile, IReadOnlyList<TimelineEntry> Timeline, IReadOnlyList<AdminSkillGroup> SkillMatrix);
@@ -142,4 +230,32 @@ internal sealed record CreateSkillCategoryRequest(string Name);
 internal sealed record RenameSkillCategoryRequest(string NewName);
 internal sealed record CreateSkillRequest(string CategoryName, string Id, string Name, string? Url);
 internal sealed record UpdateSkillRequest(string Name, string? Url);
+
+internal sealed record CreateTimelineEntryRequest(
+    string Company,
+    string? Period,
+    string? Location,
+    string RoleTitle,
+    string? Start,
+    string? End);
+
+internal sealed record UpdateTimelineEntryRequest(
+    string Company,
+    string? Period,
+    string? Location,
+    string RoleTitle,
+    string? Start,
+    string? End);
+
+internal sealed record CreateProjectRequest(
+    string Name,
+    string? BriefSummary,
+    string? Narrative,
+    List<string> AppliedSkillIds);
+
+internal sealed record UpdateProjectRequest(
+    string Name,
+    string? BriefSummary,
+    string? Narrative,
+    List<string> AppliedSkillIds);
 #endif

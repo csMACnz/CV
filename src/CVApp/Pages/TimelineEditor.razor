@@ -1,0 +1,207 @@
+@* ADR-004 / ADR-011: Timeline editor — excluded from Release builds via CVApp.csproj.
+   This component is only compiled in Debug (local Aspire) mode. *@
+@using CVApp.Services
+
+<section class="admin-timeline-form">
+    <h2>Timeline</h2>
+
+    @if (_busy)
+    {
+        <p>Saving&hellip;</p>
+    }
+    else if (_errorMessage is not null)
+    {
+        <p class="text-danger">@_errorMessage</p>
+    }
+    else if (_successMessage is not null)
+    {
+        <p class="text-success">@_successMessage</p>
+    }
+
+    <div class="admin-timeline-create">
+        <h3>Add Timeline Entry</h3>
+        <label>Company <input type="text" @bind="_newCompany" /></label>
+        <label>Period <input type="text" @bind="_newPeriod" /></label>
+        <label>Location <input type="text" @bind="_newLocation" /></label>
+        <label>Role Title <input type="text" @bind="_newRoleTitle" /></label>
+        <label>Start <input type="text" @bind="_newStart" /></label>
+        <label>End <input type="text" @bind="_newEnd" /></label>
+        <button type="button" @onclick="AddEntryAsync">Add Entry</button>
+    </div>
+
+    @for (var i = 0; i < _entries.Count; i++)
+    {
+        var entry = _entries[i];
+        var entryIndex = i;
+
+        <section class="admin-timeline-entry">
+            <div class="admin-timeline-entry__header">
+                <label>Company <input type="text" @bind="entry.Company" /></label>
+                <label>Period <input type="text" @bind="entry.Period" /></label>
+                <label>Location <input type="text" @bind="entry.Location" /></label>
+                <label>Role Title <input type="text" @bind="entry.RoleTitle" /></label>
+                <label>Start <input type="text" @bind="entry.Start" /></label>
+                <label>End <input type="text" @bind="entry.End" /></label>
+                <button type="button" @onclick="() => SaveEntryAsync(entryIndex)">Save Entry</button>
+                <button type="button" @onclick="() => DeleteEntryAsync(entryIndex)">Delete Entry</button>
+            </div>
+
+            <ProjectEditor
+                EntryId="@entry.OriginalCompany"
+                InitialProjects="@entry.Projects"
+                AvailableSkills="@AvailableSkills" />
+        </section>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<TimelineEntry> InitialTimeline { get; set; } = [];
+    [Parameter, EditorRequired] public IReadOnlyList<AdminSkillGroup> AvailableSkills { get; set; } = [];
+    [Inject] private ICvAdminStoreService AdminStore { get; set; } = default!;
+
+    private List<EditableTimelineEntry> _entries = [];
+    private IReadOnlyList<TimelineEntry>? _lastSeenTimeline;
+
+    private string _newCompany = string.Empty;
+    private string _newPeriod = string.Empty;
+    private string _newLocation = string.Empty;
+    private string _newRoleTitle = string.Empty;
+    private string _newStart = string.Empty;
+    private string _newEnd = string.Empty;
+
+    private bool _busy;
+    private string? _successMessage;
+    private string? _errorMessage;
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_lastSeenTimeline, InitialTimeline))
+            return;
+
+        _lastSeenTimeline = InitialTimeline;
+        _entries = InitialTimeline
+            .Select(entry =>
+            {
+                var firstRole = entry.Roles.FirstOrDefault();
+                return new EditableTimelineEntry
+                {
+                    OriginalCompany = entry.Company,
+                    Company = entry.Company,
+                    Period = entry.Period ?? string.Empty,
+                    Location = entry.Location ?? string.Empty,
+                    RoleTitle = firstRole?.Title ?? string.Empty,
+                    Start = firstRole?.Start ?? string.Empty,
+                    End = firstRole?.End ?? string.Empty,
+                    Projects = entry.Roles.SelectMany(r => r.Projects).ToList()
+                };
+            })
+            .ToList();
+    }
+
+    private async Task AddEntryAsync()
+    {
+        var company = _newCompany.Trim();
+        if (string.IsNullOrWhiteSpace(company))
+        {
+            _successMessage = null;
+            _errorMessage = "Company name is required.";
+            return;
+        }
+
+        await ExecuteAsync(
+            () => AdminStore.AddTimelineEntryAsync(
+                company,
+                NormalizeOptional(_newPeriod),
+                NormalizeOptional(_newLocation),
+                _newRoleTitle.Trim(),
+                NormalizeOptional(_newStart),
+                NormalizeOptional(_newEnd)),
+            () =>
+            {
+                _entries.Add(new EditableTimelineEntry
+                {
+                    OriginalCompany = company,
+                    Company = company,
+                    Period = _newPeriod.Trim(),
+                    Location = _newLocation.Trim(),
+                    RoleTitle = _newRoleTitle.Trim(),
+                    Start = _newStart.Trim(),
+                    End = _newEnd.Trim()
+                });
+                _newCompany = string.Empty;
+                _newPeriod = string.Empty;
+                _newLocation = string.Empty;
+                _newRoleTitle = string.Empty;
+                _newStart = string.Empty;
+                _newEnd = string.Empty;
+            },
+            $"Entry '{company}' added.");
+    }
+
+    private async Task SaveEntryAsync(int entryIndex)
+    {
+        var entry = _entries[entryIndex];
+        var originalCompany = entry.OriginalCompany;
+
+        await ExecuteAsync(
+            () => AdminStore.UpdateTimelineEntryAsync(
+                originalCompany,
+                entry.Company.Trim(),
+                NormalizeOptional(entry.Period),
+                NormalizeOptional(entry.Location),
+                entry.RoleTitle.Trim(),
+                NormalizeOptional(entry.Start),
+                NormalizeOptional(entry.End)),
+            () =>
+            {
+                entry.OriginalCompany = entry.Company.Trim();
+            },
+            $"Entry '{entry.Company}' saved.");
+    }
+
+    private async Task DeleteEntryAsync(int entryIndex)
+    {
+        var entry = _entries[entryIndex];
+        await ExecuteAsync(
+            () => AdminStore.DeleteTimelineEntryAsync(entry.OriginalCompany),
+            () => _entries.RemoveAt(entryIndex),
+            $"Entry '{entry.OriginalCompany}' deleted.");
+    }
+
+    private async Task ExecuteAsync(Func<Task> action, Action onSuccess, string successMessage)
+    {
+        _busy = true;
+        _successMessage = null;
+        _errorMessage = null;
+
+        try
+        {
+            await action();
+            onSuccess();
+            _successMessage = successMessage;
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private sealed class EditableTimelineEntry
+    {
+        public string OriginalCompany { get; set; } = string.Empty;
+        public string Company { get; set; } = string.Empty;
+        public string Period { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+        public string RoleTitle { get; set; } = string.Empty;
+        public string Start { get; set; } = string.Empty;
+        public string End { get; set; } = string.Empty;
+        public List<Project> Projects { get; set; } = [];
+    }
+}

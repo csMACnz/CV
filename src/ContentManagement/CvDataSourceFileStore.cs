@@ -228,6 +228,243 @@ public sealed class CvDataSourceFileStore
             located.Category.Skills.RemoveAt(located.SkillIndex);
         }, cancellationToken);
 
+    // ── Timeline CRUD ────────────────────────────────────────────────────────
+
+    public Task AddTimelineEntryAsync(
+        string path,
+        ExperiencePayload fallback,
+        string company,
+        string? period,
+        string? location,
+        string roleTitle,
+        string? start,
+        string? end,
+        CancellationToken cancellationToken = default)
+        => AddTimelineEntryAsync(path, () => fallback, company, period, location, roleTitle, start, end, cancellationToken);
+
+    public Task AddTimelineEntryAsync(
+        string path,
+        Func<ExperiencePayload> fallbackFactory,
+        string company,
+        string? period,
+        string? location,
+        string roleTitle,
+        string? start,
+        string? end,
+        CancellationToken cancellationToken = default)
+        => MutateTimelineAsync(path, fallbackFactory, timeline =>
+        {
+            if (string.IsNullOrWhiteSpace(company))
+                throw new ArgumentException("Company name is required.", nameof(company));
+
+            if (timeline.Any(entry => string.Equals(entry.Company, company, StringComparison.OrdinalIgnoreCase)))
+                throw new InvalidOperationException($"Timeline entry for '{company}' already exists.");
+
+            var role = new Role(
+                string.IsNullOrWhiteSpace(roleTitle) ? "Role" : roleTitle.Trim(),
+                start,
+                end,
+                []);
+
+            timeline.Add(new TimelineEntry(company.Trim(), period, location, [role]));
+        }, cancellationToken);
+
+    public Task UpdateTimelineEntryAsync(
+        string path,
+        ExperiencePayload fallback,
+        string entryId,
+        string company,
+        string? period,
+        string? location,
+        string roleTitle,
+        string? start,
+        string? end,
+        CancellationToken cancellationToken = default)
+        => UpdateTimelineEntryAsync(path, () => fallback, entryId, company, period, location, roleTitle, start, end, cancellationToken);
+
+    public Task UpdateTimelineEntryAsync(
+        string path,
+        Func<ExperiencePayload> fallbackFactory,
+        string entryId,
+        string company,
+        string? period,
+        string? location,
+        string roleTitle,
+        string? start,
+        string? end,
+        CancellationToken cancellationToken = default)
+        => MutateTimelineAsync(path, fallbackFactory, timeline =>
+        {
+            var index = timeline.FindIndex(e =>
+                string.Equals(e.Company, entryId, StringComparison.OrdinalIgnoreCase));
+
+            if (index < 0)
+                throw new KeyNotFoundException($"Timeline entry '{entryId}' was not found.");
+
+            if (!string.Equals(entryId, company, StringComparison.OrdinalIgnoreCase) &&
+                timeline.Any(e => string.Equals(e.Company, company, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidOperationException($"A timeline entry for '{company}' already exists.");
+            }
+
+            var current = timeline[index];
+            var existingRoles = current.Roles;
+
+            List<Role> updatedRoles;
+            if (existingRoles.Count > 0)
+            {
+                var firstRole = existingRoles[0];
+                var updatedFirst = firstRole with
+                {
+                    Title = string.IsNullOrWhiteSpace(roleTitle) ? firstRole.Title : roleTitle.Trim(),
+                    Start = start,
+                    End = end
+                };
+                updatedRoles = [updatedFirst, .. existingRoles.Skip(1)];
+            }
+            else
+            {
+                updatedRoles = [new Role(string.IsNullOrWhiteSpace(roleTitle) ? "Role" : roleTitle.Trim(), start, end, [])];
+            }
+
+            timeline[index] = current with
+            {
+                Company = company.Trim(),
+                Period = period,
+                Location = location,
+                Roles = updatedRoles
+            };
+        }, cancellationToken);
+
+    public Task DeleteTimelineEntryAsync(
+        string path,
+        ExperiencePayload fallback,
+        string entryId,
+        CancellationToken cancellationToken = default)
+        => DeleteTimelineEntryAsync(path, () => fallback, entryId, cancellationToken);
+
+    public Task DeleteTimelineEntryAsync(
+        string path,
+        Func<ExperiencePayload> fallbackFactory,
+        string entryId,
+        CancellationToken cancellationToken = default)
+        => MutateTimelineAsync(path, fallbackFactory, timeline =>
+        {
+            var removed = timeline.RemoveAll(e =>
+                string.Equals(e.Company, entryId, StringComparison.OrdinalIgnoreCase));
+
+            if (removed == 0)
+                throw new KeyNotFoundException($"Timeline entry '{entryId}' was not found.");
+        }, cancellationToken);
+
+    // ── Project CRUD ─────────────────────────────────────────────────────────
+
+    public Task AddProjectAsync(
+        string path,
+        ExperiencePayload fallback,
+        string entryId,
+        string name,
+        string? briefSummary,
+        string? narrative,
+        List<string> appliedSkillIds,
+        CancellationToken cancellationToken = default)
+        => AddProjectAsync(path, () => fallback, entryId, name, briefSummary, narrative, appliedSkillIds, cancellationToken);
+
+    public Task AddProjectAsync(
+        string path,
+        Func<ExperiencePayload> fallbackFactory,
+        string entryId,
+        string name,
+        string? briefSummary,
+        string? narrative,
+        List<string> appliedSkillIds,
+        CancellationToken cancellationToken = default)
+        => MutateTimelineAsync(path, fallbackFactory, timeline =>
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Project name is required.", nameof(name));
+
+            var entry = FindTimelineEntry(timeline, entryId);
+            if (entry is null)
+                throw new KeyNotFoundException($"Timeline entry '{entryId}' was not found.");
+
+            var allProjects = entry.Roles.SelectMany(r => r.Projects);
+            if (allProjects.Any(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)))
+                throw new InvalidOperationException($"Project '{name}' already exists in entry '{entryId}'.");
+
+            if (entry.Roles.Count == 0)
+                throw new InvalidOperationException($"Timeline entry '{entryId}' has no roles to attach a project to.");
+
+            entry.Roles[0].Projects.Add(new Project(name.Trim(), appliedSkillIds, narrative ?? string.Empty, briefSummary));
+        }, cancellationToken);
+
+    public Task UpdateProjectAsync(
+        string path,
+        ExperiencePayload fallback,
+        string entryId,
+        string projectId,
+        string name,
+        string? briefSummary,
+        string? narrative,
+        List<string> appliedSkillIds,
+        CancellationToken cancellationToken = default)
+        => UpdateProjectAsync(path, () => fallback, entryId, projectId, name, briefSummary, narrative, appliedSkillIds, cancellationToken);
+
+    public Task UpdateProjectAsync(
+        string path,
+        Func<ExperiencePayload> fallbackFactory,
+        string entryId,
+        string projectId,
+        string name,
+        string? briefSummary,
+        string? narrative,
+        List<string> appliedSkillIds,
+        CancellationToken cancellationToken = default)
+        => MutateTimelineAsync(path, fallbackFactory, timeline =>
+        {
+            var located = FindProject(timeline, entryId, projectId);
+            if (located is null)
+                throw new KeyNotFoundException($"Project '{projectId}' was not found in entry '{entryId}'.");
+
+            if (!string.Equals(projectId, name, StringComparison.OrdinalIgnoreCase))
+            {
+                var allProjects = FindTimelineEntry(timeline, entryId)!.Roles.SelectMany(r => r.Projects);
+                if (allProjects.Any(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)))
+                    throw new InvalidOperationException($"Project '{name}' already exists in entry '{entryId}'.");
+            }
+
+            located.Role.Projects[located.ProjectIndex] = located.Project with
+            {
+                Name = name.Trim(),
+                BriefSummary = briefSummary,
+                Narrative = narrative ?? string.Empty,
+                Skills = appliedSkillIds
+            };
+        }, cancellationToken);
+
+    public Task DeleteProjectAsync(
+        string path,
+        ExperiencePayload fallback,
+        string entryId,
+        string projectId,
+        CancellationToken cancellationToken = default)
+        => DeleteProjectAsync(path, () => fallback, entryId, projectId, cancellationToken);
+
+    public Task DeleteProjectAsync(
+        string path,
+        Func<ExperiencePayload> fallbackFactory,
+        string entryId,
+        string projectId,
+        CancellationToken cancellationToken = default)
+        => MutateTimelineAsync(path, fallbackFactory, timeline =>
+        {
+            var located = FindProject(timeline, entryId, projectId);
+            if (located is null)
+                throw new KeyNotFoundException($"Project '{projectId}' was not found in entry '{entryId}'.");
+
+            located.Role.Projects.RemoveAt(located.ProjectIndex);
+        }, cancellationToken);
+
     private static async Task MutateSkillMatrixAsync(
         string path,
         Func<ExperiencePayload> fallbackFactory,
@@ -238,6 +475,18 @@ public sealed class CvDataSourceFileStore
             var skillMatrix = root["skillMatrix"]?.Deserialize<List<SkillGroup>>(CamelCaseOptions) ?? [];
             mutate(skillMatrix);
             root["skillMatrix"] = JsonSerializer.SerializeToNode(skillMatrix, CamelCaseOptions);
+        }, cancellationToken);
+
+    private static async Task MutateTimelineAsync(
+        string path,
+        Func<ExperiencePayload> fallbackFactory,
+        Action<List<TimelineEntry>> mutate,
+        CancellationToken cancellationToken)
+        => await MutateRootAsync(path, fallbackFactory, root =>
+        {
+            var timeline = root["timeline"]?.Deserialize<List<TimelineEntry>>(CamelCaseOptions) ?? [];
+            mutate(timeline);
+            root["timeline"] = JsonSerializer.SerializeToNode(timeline, CamelCaseOptions);
         }, cancellationToken);
 
     private static async Task MutateRootAsync(
@@ -292,10 +541,33 @@ public sealed class CvDataSourceFileStore
         return null;
     }
 
+    private static TimelineEntry? FindTimelineEntry(List<TimelineEntry> timeline, string entryId)
+        => timeline.FirstOrDefault(e =>
+            string.Equals(e.Company, entryId, StringComparison.OrdinalIgnoreCase));
+
+    private static LocatedProject? FindProject(List<TimelineEntry> timeline, string entryId, string projectId)
+    {
+        var entry = FindTimelineEntry(timeline, entryId);
+        if (entry is null)
+            return null;
+
+        foreach (var role in entry.Roles)
+        {
+            var projectIndex = role.Projects.FindIndex(p =>
+                string.Equals(p.Name, projectId, StringComparison.OrdinalIgnoreCase));
+
+            if (projectIndex >= 0)
+                return new LocatedProject(role, projectIndex, role.Projects[projectIndex]);
+        }
+
+        return null;
+    }
+
     private static string? NormalizeUrl(string? url)
         => string.IsNullOrWhiteSpace(url) ? null : url.Trim();
 
     private sealed record LocatedSkill(SkillGroup Category, int SkillIndex);
+    private sealed record LocatedProject(Role Role, int ProjectIndex, Project Project);
 }
 
 public record CvDataSourceDocument(Profile Profile, List<TimelineEntry> Timeline, List<SkillGroup> SkillMatrix);

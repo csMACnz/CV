@@ -9,7 +9,7 @@ public record Profile(string Name, string Title, string Bio, string Location, Li
 public record ContactLink(string Label, string Url, string IconKey);
 public record TimelineEntry(string Company, string? Period, string? Location, List<Role> Roles);
 public record Role(string Title, string? Start, string? End, List<Project> Projects);
-public record Project(string Name, List<string> Skills, string Narrative);
+public record Project(string Name, List<string> Skills, string Narrative, string? BriefSummary = null);
 
 internal record ProfileData
 {
