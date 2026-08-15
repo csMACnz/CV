@@ -17,12 +17,7 @@ else if (_data is not null)
 {
     <section>
         <h2>Timeline</h2>
-        <ul>
-            @foreach (var entry in _data.Timeline)
-            {
-                <li>@entry.Company (@entry.Period)</li>
-            }
-        </ul>
+        <TimelineEditor InitialTimeline="_data.Timeline" AvailableSkills="_data.SkillMatrix" />
     </section>
     <ProfileEditForm InitialProfile="_data.Profile" />
     <SkillMatrixManager InitialSkillMatrix="_data.SkillMatrix" />

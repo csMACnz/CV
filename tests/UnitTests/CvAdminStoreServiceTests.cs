@@ -218,6 +218,99 @@ public class CvAdminStoreServiceTests
         Assert.Equal(HttpMethod.Delete, handler.LastRequestMethod);
     }
 
+    [Fact]
+    public async Task AddTimelineEntryAsync_SendsPostRequestToCorrectRoute()
+    {
+        var handler = new FakeHttpMessageHandler(HttpStatusCode.OK, string.Empty, "application/json");
+        var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") };
+        var service = new CvAdminStoreService(httpClient);
+
+        await service.AddTimelineEntryAsync("Acme Corp", "2020–2024", "Remote", "Senior Engineer", "2020-01", "2024-06");
+
+        Assert.NotNull(handler.LastRequestUri);
+        Assert.Equal("/api/admin/timeline", handler.LastRequestUri!.AbsolutePath);
+        Assert.Equal(HttpMethod.Post, handler.LastRequestMethod);
+        Assert.Contains("Acme Corp", handler.LastRequestBody);
+        Assert.Contains("Senior Engineer", handler.LastRequestBody);
+    }
+
+    [Fact]
+    public async Task UpdateTimelineEntryAsync_SendsPutRequestToCorrectRoute()
+    {
+        var handler = new FakeHttpMessageHandler(HttpStatusCode.OK, string.Empty, "application/json");
+        var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") };
+        var service = new CvAdminStoreService(httpClient);
+
+        await service.UpdateTimelineEntryAsync("Acme Corp", "New Corp", "2020–2025", "Hybrid", "Lead Engineer", "2020-01", "2025-01");
+
+        Assert.NotNull(handler.LastRequestUri);
+        Assert.Equal("/api/admin/timeline/Acme%20Corp", handler.LastRequestUri!.AbsolutePath);
+        Assert.Equal(HttpMethod.Put, handler.LastRequestMethod);
+        Assert.Contains("New Corp", handler.LastRequestBody);
+        Assert.Contains("Lead Engineer", handler.LastRequestBody);
+    }
+
+    [Fact]
+    public async Task DeleteTimelineEntryAsync_SendsDeleteRequestToCorrectRoute()
+    {
+        var handler = new FakeHttpMessageHandler(HttpStatusCode.OK, string.Empty, "application/json");
+        var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") };
+        var service = new CvAdminStoreService(httpClient);
+
+        await service.DeleteTimelineEntryAsync("Acme Corp");
+
+        Assert.NotNull(handler.LastRequestUri);
+        Assert.Equal("/api/admin/timeline/Acme%20Corp", handler.LastRequestUri!.AbsolutePath);
+        Assert.Equal(HttpMethod.Delete, handler.LastRequestMethod);
+    }
+
+    [Fact]
+    public async Task AddProjectAsync_SendsPostRequestToCorrectRoute()
+    {
+        var handler = new FakeHttpMessageHandler(HttpStatusCode.OK, string.Empty, "application/json");
+        var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") };
+        var service = new CvAdminStoreService(httpClient);
+
+        await service.AddProjectAsync("Acme Corp", "My Project", "Brief summary", "Detailed narrative", ["csharp"]);
+
+        Assert.NotNull(handler.LastRequestUri);
+        Assert.Equal("/api/admin/timeline/Acme%20Corp/projects", handler.LastRequestUri!.AbsolutePath);
+        Assert.Equal(HttpMethod.Post, handler.LastRequestMethod);
+        Assert.Contains("My Project", handler.LastRequestBody);
+        Assert.Contains("Brief summary", handler.LastRequestBody);
+        Assert.Contains("csharp", handler.LastRequestBody);
+    }
+
+    [Fact]
+    public async Task UpdateProjectAsync_SendsPutRequestToCorrectRoute()
+    {
+        var handler = new FakeHttpMessageHandler(HttpStatusCode.OK, string.Empty, "application/json");
+        var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") };
+        var service = new CvAdminStoreService(httpClient);
+
+        await service.UpdateProjectAsync("Acme Corp", "Old Project", "New Project", "New summary", "New narrative", ["csharp", "dotnet"]);
+
+        Assert.NotNull(handler.LastRequestUri);
+        Assert.Equal("/api/admin/timeline/Acme%20Corp/projects/Old%20Project", handler.LastRequestUri!.AbsolutePath);
+        Assert.Equal(HttpMethod.Put, handler.LastRequestMethod);
+        Assert.Contains("New Project", handler.LastRequestBody);
+        Assert.Contains("New summary", handler.LastRequestBody);
+    }
+
+    [Fact]
+    public async Task DeleteProjectAsync_SendsDeleteRequestToCorrectRoute()
+    {
+        var handler = new FakeHttpMessageHandler(HttpStatusCode.OK, string.Empty, "application/json");
+        var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") };
+        var service = new CvAdminStoreService(httpClient);
+
+        await service.DeleteProjectAsync("Acme Corp", "My Project");
+
+        Assert.NotNull(handler.LastRequestUri);
+        Assert.Equal("/api/admin/timeline/Acme%20Corp/projects/My%20Project", handler.LastRequestUri!.AbsolutePath);
+        Assert.Equal(HttpMethod.Delete, handler.LastRequestMethod);
+    }
+
     private sealed class FakeHttpMessageHandler(HttpStatusCode statusCode, string content, string mediaType)
         : HttpMessageHandler
     {

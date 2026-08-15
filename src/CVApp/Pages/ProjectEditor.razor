@@ -1,0 +1,232 @@
+@* ADR-004 / ADR-011: Project editor — excluded from Release builds via CVApp.csproj.
+   This component is only compiled in Debug (local Aspire) mode. *@
+@using CVApp.Services
+
+<section class="admin-project-editor">
+    <h4>Projects</h4>
+
+    @if (_busy)
+    {
+        <p>Saving&hellip;</p>
+    }
+    else if (_errorMessage is not null)
+    {
+        <p class="text-danger">@_errorMessage</p>
+    }
+    else if (_successMessage is not null)
+    {
+        <p class="text-success">@_successMessage</p>
+    }
+
+    <div class="admin-project-create">
+        <h5>Add Project</h5>
+        <label>Title <input type="text" @bind="_newName" /></label>
+        <label>Brief Summary <input type="text" @bind="_newBriefSummary" /></label>
+        <label>Detailed Narrative
+            <textarea @bind="_newNarrative" rows="4"></textarea>
+        </label>
+        <div class="admin-project-skills">
+            <label>Applied Skills</label>
+            @foreach (var group in AvailableSkills)
+            {
+                <fieldset>
+                    <legend>@group.Name</legend>
+                    @foreach (var skill in group.Skills)
+                    {
+                        var skillId = skill.Id;
+                        <label>
+                            <input type="checkbox"
+                                   checked="@_newAppliedSkillIds.Contains(skillId)"
+                                   @onchange="e => ToggleNewSkill(skillId, (bool)(e.Value ?? false))" />
+                            @skill.Name
+                        </label>
+                    }
+                </fieldset>
+            }
+        </div>
+        <button type="button" @onclick="AddProjectAsync">Add Project</button>
+    </div>
+
+    @for (var i = 0; i < _projects.Count; i++)
+    {
+        var project = _projects[i];
+        var projectIndex = i;
+
+        <div class="admin-project-row">
+            <label>Title <input type="text" @bind="project.Name" /></label>
+            <label>Brief Summary <input type="text" @bind="project.BriefSummary" /></label>
+            <label>Detailed Narrative
+                <textarea @bind="project.Narrative" rows="4"></textarea>
+            </label>
+            <div class="admin-project-skills">
+                <label>Applied Skills</label>
+                @foreach (var group in AvailableSkills)
+                {
+                    <fieldset>
+                        <legend>@group.Name</legend>
+                        @foreach (var skill in group.Skills)
+                        {
+                            var skillId = skill.Id;
+                            var capturedProject = project;
+                            <label>
+                                <input type="checkbox"
+                                       checked="@capturedProject.AppliedSkillIds.Contains(skillId)"
+                                       @onchange="e => ToggleProjectSkill(capturedProject, skillId, (bool)(e.Value ?? false))" />
+                                @skill.Name
+                            </label>
+                        }
+                    </fieldset>
+                }
+            </div>
+            <button type="button" @onclick="() => SaveProjectAsync(projectIndex)">Save Project</button>
+            <button type="button" @onclick="() => DeleteProjectAsync(projectIndex)">Delete Project</button>
+        </div>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public string EntryId { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public IReadOnlyList<Project> InitialProjects { get; set; } = [];
+    [Parameter, EditorRequired] public IReadOnlyList<AdminSkillGroup> AvailableSkills { get; set; } = [];
+    [Inject] private ICvAdminStoreService AdminStore { get; set; } = default!;
+
+    private List<EditableProject> _projects = [];
+    private IReadOnlyList<Project>? _lastSeenProjects;
+
+    private string _newName = string.Empty;
+    private string _newBriefSummary = string.Empty;
+    private string _newNarrative = string.Empty;
+    private HashSet<string> _newAppliedSkillIds = [];
+
+    private bool _busy;
+    private string? _successMessage;
+    private string? _errorMessage;
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_lastSeenProjects, InitialProjects))
+            return;
+
+        _lastSeenProjects = InitialProjects;
+        _projects = InitialProjects
+            .Select(p => new EditableProject
+            {
+                OriginalName = p.Name,
+                Name = p.Name,
+                BriefSummary = p.BriefSummary ?? string.Empty,
+                Narrative = p.Narrative,
+                AppliedSkillIds = new HashSet<string>(p.Skills)
+            })
+            .ToList();
+    }
+
+    private void ToggleNewSkill(string skillId, bool isChecked)
+    {
+        if (isChecked) _newAppliedSkillIds.Add(skillId);
+        else _newAppliedSkillIds.Remove(skillId);
+    }
+
+    private void ToggleProjectSkill(EditableProject project, string skillId, bool isChecked)
+    {
+        if (isChecked) project.AppliedSkillIds.Add(skillId);
+        else project.AppliedSkillIds.Remove(skillId);
+    }
+
+    private async Task AddProjectAsync()
+    {
+        var name = _newName.Trim();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            _successMessage = null;
+            _errorMessage = "Project title is required.";
+            return;
+        }
+
+        await ExecuteAsync(
+            () => AdminStore.AddProjectAsync(
+                EntryId,
+                name,
+                NormalizeOptional(_newBriefSummary),
+                _newNarrative.Trim(),
+                [.. _newAppliedSkillIds]),
+            () =>
+            {
+                _projects.Add(new EditableProject
+                {
+                    OriginalName = name,
+                    Name = name,
+                    BriefSummary = _newBriefSummary.Trim(),
+                    Narrative = _newNarrative.Trim(),
+                    AppliedSkillIds = new HashSet<string>(_newAppliedSkillIds)
+                });
+                _newName = string.Empty;
+                _newBriefSummary = string.Empty;
+                _newNarrative = string.Empty;
+                _newAppliedSkillIds = [];
+            },
+            $"Project '{name}' added.");
+    }
+
+    private async Task SaveProjectAsync(int projectIndex)
+    {
+        var project = _projects[projectIndex];
+        var originalName = project.OriginalName;
+
+        await ExecuteAsync(
+            () => AdminStore.UpdateProjectAsync(
+                EntryId,
+                originalName,
+                project.Name.Trim(),
+                NormalizeOptional(project.BriefSummary),
+                project.Narrative.Trim(),
+                [.. project.AppliedSkillIds]),
+            () =>
+            {
+                project.OriginalName = project.Name.Trim();
+            },
+            $"Project '{project.Name}' saved.");
+    }
+
+    private async Task DeleteProjectAsync(int projectIndex)
+    {
+        var project = _projects[projectIndex];
+        await ExecuteAsync(
+            () => AdminStore.DeleteProjectAsync(EntryId, project.OriginalName),
+            () => _projects.RemoveAt(projectIndex),
+            $"Project '{project.OriginalName}' deleted.");
+    }
+
+    private async Task ExecuteAsync(Func<Task> action, Action onSuccess, string successMessage)
+    {
+        _busy = true;
+        _successMessage = null;
+        _errorMessage = null;
+
+        try
+        {
+            await action();
+            onSuccess();
+            _successMessage = successMessage;
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private sealed class EditableProject
+    {
+        public string OriginalName { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string BriefSummary { get; set; } = string.Empty;
+        public string Narrative { get; set; } = string.Empty;
+        public HashSet<string> AppliedSkillIds { get; set; } = [];
+    }
+}

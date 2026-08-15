@@ -27,6 +27,8 @@
     <Content Remove="Pages\AdminDashboard.razor" />
     <Content Remove="Pages\ProfileEditForm.razor" />
     <Content Remove="Pages\SkillMatrixManager.razor" />
+    <Content Remove="Pages\TimelineEditor.razor" />
+    <Content Remove="Pages\ProjectEditor.razor" />
   </ItemGroup>
 
   <Target Name="AggregateExperienceJson" BeforeTargets="BeforeBuild" Condition="'$(Configuration)' == 'Release'">
