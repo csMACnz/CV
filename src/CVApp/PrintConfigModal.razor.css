@@ -1,0 +1,78 @@
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    background: rgba(15, 23, 42, 0.45);
+    padding: 1rem;
+}
+
+.print-config-modal {
+    width: min(100%, 34rem);
+    border-radius: 0.75rem;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    color: #0f172a;
+    box-shadow: 0 1.25rem 2.5rem rgba(15, 23, 42, 0.2);
+}
+
+.print-config-modal__header,
+.print-config-modal__content,
+.print-config-modal__actions {
+    padding: 1rem 1.25rem;
+}
+
+.print-config-modal__header {
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.print-config-modal__header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.print-config-modal__content {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.print-config-modal__field {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.print-config-modal__field > span {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.print-config-modal__field > select {
+    min-height: 2.4rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    padding: 0 0.6rem;
+}
+
+.print-config-modal__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.print-config-modal__button {
+    min-height: 2.5rem;
+    padding: 0.4rem 0.9rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    background: #fff;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.print-config-modal__button--primary {
+    border-color: #1d4ed8;
+    background: #1d4ed8;
+    color: #fff;
+}

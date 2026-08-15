@@ -26,6 +26,14 @@
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
+    <script>
+        window.cvApp = window.cvApp || {};
+        window.cvApp.printCv = function () {
+            window.requestAnimationFrame(function () {
+                window.print();
+            });
+        };
+    </script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
 

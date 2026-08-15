@@ -2,6 +2,8 @@
 @page "/experience"
 @inject ExperienceDataService ExperienceDataService
 @inject SkillHighlightService SkillHighlightService
+@inject PrintConfigurationService PrintConfigurationService
+@inject IJSRuntime JS
 
 <PageTitle>Experience</PageTitle>
 
@@ -16,12 +18,19 @@ else if (CvData is null)
 else
 {
     <div class="experience-shell">
-        <ProfileHeader Data="@CvData.Profile" />
+        <ProfileHeader Data="@CvData.Profile" PrintRequested="@OpenPrintConfigModal" />
         <SkillMatrix Skills="@AllSkills"
                      ActiveSkill="@ActiveSkill"
                      ActiveSkillChanged="@OnActiveSkillChanged" />
-        <TimelineFeed Entries="@CvData.Timeline" Highlights="@CurrentHighlights" />
+        <TimelineFeed Entries="@FilteredTimeline" Highlights="@CurrentHighlights" />
     </div>
+}
+
+@if (IsPrintConfigModalOpen)
+{
+    <PrintConfigModal Configuration="@PrintConfigurationService.Current"
+                      CancelRequested="@ClosePrintConfigModal"
+                      GeneratePrintRequested="@GeneratePrintAsync" />
 }
 
 @code {
@@ -30,6 +39,15 @@ else
     private string? ActiveSkill;
     private IReadOnlyList<string> AllSkills = [];
     private HighlightMap CurrentHighlights = HighlightMap.Empty;
+    private bool IsPrintConfigModalOpen;
+    private static DateOnly Today => DateOnly.FromDateTime(DateTime.Today);
+
+    private IReadOnlyList<TimelineEntry> FilteredTimeline => CvData is null
+        ? []
+        : PrintConfigurationService.FilterTimelineEntries(
+            CvData.Timeline,
+            PrintConfigurationService.Current.TimelineScope,
+            Today);
 
     protected override async Task OnInitializedAsync()
     {
@@ -57,5 +75,23 @@ else
         CurrentHighlights = CvData is not null
             ? SkillHighlightService.BuildHighlightMap(CvData.Timeline, skill)
             : HighlightMap.Empty;
+    }
+
+    private void OpenPrintConfigModal()
+    {
+        IsPrintConfigModalOpen = true;
+    }
+
+    private void ClosePrintConfigModal()
+    {
+        IsPrintConfigModalOpen = false;
+    }
+
+    private async Task GeneratePrintAsync(PrintConfiguration configuration)
+    {
+        PrintConfigurationService.Update(configuration);
+        IsPrintConfigModalOpen = false;
+        await InvokeAsync(StateHasChanged);
+        await JS.InvokeVoidAsync("cvApp.printCv");
     }
 }

@@ -141,3 +141,59 @@ code {
     opacity: 0.4;
     transition: opacity 0.2s;
 }
+
+@media print {
+    .no-print,
+    .modal-backdrop,
+    .top-row,
+    .nav-scrollable,
+    .navbar-toggler,
+    #blazor-error-ui {
+        display: none !important;
+    }
+
+    html,
+    body,
+    .page,
+    .content,
+    .experience-shell,
+    .profile-header,
+    .timeline-card,
+    .timeline-card__role,
+    .project-card {
+        background: #fff !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    .timeline-card,
+    .timeline-card__role,
+    .project-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .cv-app-root.print-projects-brief .project-card__narrative {
+        display: none !important;
+    }
+
+    .cv-app-root.print-projects-full .project-card__narrative {
+        display: block !important;
+    }
+
+    .cv-app-root.print-skills-compact .skill-matrix {
+        display: flex !important;
+    }
+
+    .cv-app-root.print-skills-matrix .skill-matrix {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.35rem !important;
+    }
+
+    .cv-app-root .skill-matrix__node {
+        border-color: #000 !important;
+        color: #000 !important;
+    }
+}

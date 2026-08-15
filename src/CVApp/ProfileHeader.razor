@@ -5,6 +5,15 @@
         <p class="profile-header__title">@Data.Title</p>
         <p class="profile-header__bio">@Data.Bio</p>
 
+        @if (PrintRequested.HasDelegate)
+        {
+            <div class="profile-header__actions no-print">
+                <button type="button" class="profile-header__print-button" @onclick="PrintRequested">
+                    Print / Save PDF
+                </button>
+            </div>
+        }
+
         <div class="profile-header__meta">
             <p class="profile-header__location">@Data.Location</p>
             @if (_safeLinks.Count > 0)
@@ -30,6 +39,9 @@
 
     [Parameter, EditorRequired]
     public Profile Data { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback PrintRequested { get; set; }
 
     protected override void OnParametersSet()
     {
