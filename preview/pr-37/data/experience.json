@@ -1,0 +1,50 @@
+{
+  "profile": {
+    "name": "Casey Mac",
+    "title": "Senior Software Engineer",
+    "bio": "Builds resilient .NET platforms, developer tooling, and polished portfolio experiences for technical audiences.",
+    "location": "Aotearoa New Zealand",
+    "links": [
+      {
+        "label": "Email",
+        "url": "mailto:casey@example.com",
+        "iconKey": "email"
+      },
+      {
+        "label": "GitHub",
+        "url": "https://github.com/csmacnz",
+        "iconKey": "github"
+      },
+      {
+        "label": "Website",
+        "url": "https://csmac.nz",
+        "iconKey": "link"
+      }
+    ]
+  },
+  "timeline": [
+    {
+      "company": "Example Corp",
+      "period": "2020\u20132023",
+      "location": "Remote",
+      "roles": [
+        {
+          "title": "Senior Software Engineer",
+          "start": "2020-06",
+          "end": "2023-09",
+          "projects": [
+            {
+              "name": "Platform Migration",
+              "skills": [
+                ".NET",
+                "Docker",
+                "Azure"
+              ],
+              "narrative": "Led a full migration of the legacy monolith to a containerised .NET microservices platform running on Azure Kubernetes Service.\nReduced deployment cycle time by 60% and eliminated environment parity issues across staging and production."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
