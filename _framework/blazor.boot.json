@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "CVApp",
   "resources": {
-    "hash": "sha256-2ImG/tZX4QA8BG6ga5Bui9BFTGe1wZTLUB1Lzi51aTQ=",
+    "hash": "sha256-9VJdxK3XbQqX8oTq4L7TqYx5+TyJnXUs7gff4XFC7jg=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-JTswf4CBcNmmrTGm6DppxYNII8GVEmbA3iXD3bU1fcA="
     },
@@ -56,7 +56,7 @@
       "System.Threading.wasm": "sha256-umeu0Sm9RMnVh+6GP0K2C2DZn7Zi8iU4AgHMc/tejKk=",
       "System.wasm": "sha256-j0ZGZpl3U3v6Y5aQxnvY7OqOdRv9E3uPI4tGitwhjXI=",
       "System.Private.CoreLib.wasm": "sha256-2gCkbvKJgYLtNjrCJk59EuSB9pMWq+cKmRZOT3qTH9g=",
-      "CVApp.wasm": "sha256-RQaOJFtXFGW/8nzopEbVLev0pbY6wO21rjwrKdnsylg="
+      "CVApp.wasm": "sha256-EvrTUvj5iYwav5gTOiOwnBoLK+gtmHJHAEwqDE41oeU="
     }
   },
   "cacheBootResources": true,
