@@ -1,0 +1,125 @@
+@* ADR-004 / ADR-011: Profile edit form — excluded from Release builds via CVApp.csproj.
+   This component is only compiled in Debug (local Aspire) mode. *@
+@using CVApp.Services
+
+<section class="admin-profile-form">
+    <h2>Edit Profile</h2>
+
+    @if (_saving)
+    {
+        <p>Saving&hellip;</p>
+    }
+    else if (_saveError is not null)
+    {
+        <p class="text-danger">Save failed: @_saveError</p>
+    }
+    else if (_saveSuccess)
+    {
+        <p class="text-success">Profile saved successfully.</p>
+    }
+
+    <div>
+        <label for="profile-name">Name</label>
+        <input id="profile-name" type="text" @bind="_name" />
+    </div>
+    <div>
+        <label for="profile-title">Title</label>
+        <input id="profile-title" type="text" @bind="_title" />
+    </div>
+    <div>
+        <label for="profile-bio">Bio</label>
+        <textarea id="profile-bio" @bind="_bio"></textarea>
+    </div>
+    <div>
+        <label for="profile-location">Location</label>
+        <input id="profile-location" type="text" @bind="_location" />
+    </div>
+
+    <h3>Contact Links</h3>
+    @for (var i = 0; i < _links.Count; i++)
+    {
+        var index = i;
+        <div class="admin-link-row">
+            <input type="text" placeholder="Label" @bind="_links[index].Label" />
+            <input type="text" placeholder="URL" @bind="_links[index].Url" />
+            <input type="text" placeholder="Icon Key" @bind="_links[index].IconKey" />
+            <button type="button" @onclick="() => RemoveLink(index)">Remove</button>
+        </div>
+    }
+    <button type="button" @onclick="AddLink">Add Link</button>
+
+    <div>
+        <button type="button" @onclick="SaveProfileAsync">Save Profile</button>
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public Profile InitialProfile { get; set; } = default!;
+    [Inject] private ICvAdminStoreService AdminStore { get; set; } = default!;
+
+    private string _name = string.Empty;
+    private string _title = string.Empty;
+    private string _bio = string.Empty;
+    private string _location = string.Empty;
+    private List<LinkModel> _links = [];
+
+    private bool _saving;
+    private bool _saveSuccess;
+    private string? _saveError;
+
+    private Profile? _lastSeenProfile;
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_lastSeenProfile, InitialProfile))
+            return;
+
+        _lastSeenProfile = InitialProfile;
+        _name = InitialProfile.Name;
+        _title = InitialProfile.Title;
+        _bio = InitialProfile.Bio;
+        _location = InitialProfile.Location;
+        _links = InitialProfile.Links
+            .Select(l => new LinkModel { Label = l.Label, Url = l.Url, IconKey = l.IconKey })
+            .ToList();
+    }
+
+    private void AddLink() => _links.Add(new LinkModel());
+
+    private void RemoveLink(int index) => _links.RemoveAt(index);
+
+    private async Task SaveProfileAsync()
+    {
+        _saving = true;
+        _saveSuccess = false;
+        _saveError = null;
+
+        try
+        {
+            var profile = new Profile(
+                _name,
+                _title,
+                _bio,
+                _location,
+                _links.Select(l => new ContactLink(l.Label, l.Url, l.IconKey)).ToList());
+
+            await AdminStore.UpdateProfileAsync(profile);
+            _saveSuccess = true;
+        }
+        catch (Exception ex)
+        {
+            _saveError = ex.Message;
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private sealed class LinkModel
+    {
+        public string Label { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
+        public string IconKey { get; set; } = string.Empty;
+    }
+}

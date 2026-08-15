@@ -13,6 +13,12 @@ public interface ICvAdminStoreService
     /// Fetches the full aggregated CV data graph from the local Admin API endpoint.
     /// </summary>
     Task<ExperiencePayload?> GetCvDataSourceAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Persists the given <paramref name="profile"/> to the local Admin API endpoint
+    /// via <c>PUT /api/admin/profile</c>.
+    /// </summary>
+    Task UpdateProfileAsync(Profile profile, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -31,5 +37,12 @@ public class CvAdminStoreService : ICvAdminStoreService
     /// <inheritdoc />
     public Task<ExperiencePayload?> GetCvDataSourceAsync(CancellationToken cancellationToken = default)
         => _httpClient.GetFromJsonAsync<ExperiencePayload>("/api/admin/cv", cancellationToken);
+
+    /// <inheritdoc />
+    public async Task UpdateProfileAsync(Profile profile, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PutAsJsonAsync("/api/admin/profile", profile, cancellationToken);
+        response.EnsureSuccessStatusCode();
+    }
 }
 #endif

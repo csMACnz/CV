@@ -73,20 +73,73 @@ public class CvAdminStoreServiceTests
         Assert.Equal("/api/admin/cv", handler.LastRequestUri!.AbsolutePath);
     }
 
+    [Fact]
+    public async Task UpdateProfileAsync_SendsPutRequestToCorrectRoute()
+    {
+        var handler = new FakeHttpMessageHandler(HttpStatusCode.OK, string.Empty, "application/json");
+        var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") };
+        var service = new CvAdminStoreService(httpClient);
+
+        var profile = new Profile("New Name", "New Title", "New Bio", "New Location", [
+            new ContactLink("GitHub", "https://github.com/test", "github")
+        ]);
+
+        await service.UpdateProfileAsync(profile);
+
+        Assert.NotNull(handler.LastRequestUri);
+        Assert.Equal("/api/admin/profile", handler.LastRequestUri!.AbsolutePath);
+        Assert.Equal(HttpMethod.Put, handler.LastRequestMethod);
+    }
+
+    [Fact]
+    public async Task UpdateProfileAsync_ThrowsHttpRequestException_WhenApiReturnsServerError()
+    {
+        var handler = new FakeHttpMessageHandler(HttpStatusCode.InternalServerError, string.Empty, "text/plain");
+        var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") };
+        var service = new CvAdminStoreService(httpClient);
+
+        var profile = new Profile("Name", "Title", "Bio", "Location", []);
+
+        await Assert.ThrowsAsync<HttpRequestException>(() => service.UpdateProfileAsync(profile));
+    }
+
+    [Fact]
+    public async Task UpdateProfileAsync_SendsProfileAsJson()
+    {
+        var handler = new FakeHttpMessageHandler(HttpStatusCode.OK, string.Empty, "application/json");
+        var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") };
+        var service = new CvAdminStoreService(httpClient);
+
+        var profile = new Profile("Jane Doe", "Engineer", "Bio text", "Auckland", [
+            new ContactLink("Email", "mailto:jane@example.com", "email")
+        ]);
+
+        await service.UpdateProfileAsync(profile);
+
+        Assert.NotNull(handler.LastRequestBody);
+        Assert.Contains("Jane Doe", handler.LastRequestBody);
+        Assert.Contains("Engineer", handler.LastRequestBody);
+    }
+
     private sealed class FakeHttpMessageHandler(HttpStatusCode statusCode, string content, string mediaType)
         : HttpMessageHandler
     {
         public Uri? LastRequestUri { get; private set; }
+        public HttpMethod? LastRequestMethod { get; private set; }
+        public string? LastRequestBody { get; private set; }
 
-        protected override Task<HttpResponseMessage> SendAsync(
+        protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken cancellationToken)
         {
             LastRequestUri = request.RequestUri;
+            LastRequestMethod = request.Method;
+            if (request.Content is not null)
+                LastRequestBody = await request.Content.ReadAsStringAsync(cancellationToken);
             var response = new HttpResponseMessage(statusCode)
             {
                 Content = new StringContent(content, System.Text.Encoding.UTF8, mediaType)
             };
-            return Task.FromResult(response);
+            return response;
         }
     }
 }

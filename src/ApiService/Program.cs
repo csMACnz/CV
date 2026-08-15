@@ -1,4 +1,6 @@
 #if DEBUG
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using ContentManagement;
 #endif
 
@@ -17,6 +19,9 @@ var app = builder.Build();
 #if DEBUG
 app.UseCors();
 
+var camelCaseOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+var indentedCamelCaseOptions = new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
 // ADR-008 / ADR-010: Serve aggregated experience data from the local content directory.
 // ContentRoot config key lets the Aspire AppHost override the default path.
 app.MapGet("/experience", (IConfiguration config, IWebHostEnvironment env) =>
@@ -33,9 +38,39 @@ app.MapGet("/api/admin/cv", (IConfiguration config, IWebHostEnvironment env) =>
     return Results.Ok(payload);
 });
 
+// ADR-004 / ADR-011: Admin profile write endpoint — updates only the Profile graph inside
+// wwwroot/data/cv-datasource.json without disturbing other root keys (SkillMatrix, Timeline).
+app.MapPut("/api/admin/profile", async (Profile profile, IConfiguration config, IWebHostEnvironment env) =>
+{
+    var path = ResolveCvDataSourcePath(config, env);
+    Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+
+    JsonObject root;
+    try
+    {
+        var existing = await File.ReadAllTextAsync(path);
+        root = JsonNode.Parse(existing)?.AsObject() ?? new JsonObject();
+    }
+    catch (FileNotFoundException)
+    {
+        root = new JsonObject();
+    }
+
+    root["profile"] = JsonSerializer.SerializeToNode(profile, camelCaseOptions);
+
+    var updated = root.ToJsonString(indentedCamelCaseOptions);
+    await File.WriteAllTextAsync(path, updated);
+
+    return Results.Ok();
+});
+
 static string ResolveContentRoot(IConfiguration config, IWebHostEnvironment env) =>
     config["ContentRoot"]
     ?? Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", "..", "content"));
+
+static string ResolveCvDataSourcePath(IConfiguration config, IWebHostEnvironment env) =>
+    config["CvDataSourcePath"]
+    ?? Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", "CVApp", "wwwroot", "data", "cv-datasource.json"));
 #endif
 
 app.Run();

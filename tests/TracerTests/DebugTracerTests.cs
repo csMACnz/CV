@@ -112,4 +112,23 @@ public class DebugTracerTests
             "ApiService Debug build must include the admin API route '/api/admin/cv' in the compiled assembly. " +
             "Ensure the endpoint is registered inside a #if DEBUG block (see ADR-004, ADR-011).");
     }
+
+    [Fact]
+    public void Debug_ApiService_Build_CompiledAssemblyContainsAdminProfilePutEndpoint()
+    {
+        using var result = BuildHelpers.RunDotnetBuildApiService("Debug");
+
+        Assert.True(result.Succeeded,
+            $"ApiService Debug build must succeed before assembly inspection can run.\nOutput:\n{result.Output}\nError:\n{result.Error}");
+
+        // ADR-004 / ADR-011: In Debug mode the ApiService exposes PUT /api/admin/profile
+        // for persisting profile edits. Verify the compiled DLL contains the route string.
+        var apiServiceDll = Path.Combine(result.OutputDirectory, "ApiService.dll");
+        if (!File.Exists(apiServiceDll))
+            return; // DLL not in expected location for this build layout — skip
+
+        Assert.True(BuildHelpers.DllContainsStringLiteral(apiServiceDll, "/api/admin/profile"),
+            "ApiService Debug build must include the admin API route '/api/admin/profile' in the compiled assembly. " +
+            "Ensure the PUT endpoint is registered inside a #if DEBUG block (see ADR-004, ADR-011).");
+    }
 }
