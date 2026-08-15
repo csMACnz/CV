@@ -3,6 +3,8 @@
    This file is only compiled in Debug (local Aspire) mode. *@
 @using CVApp.Services
 
+<h1>Admin Dashboard</h1>
+
 @if (_loading)
 {
     <p>Loading CV data&hellip;</p>
@@ -31,8 +33,6 @@ else if (_data is not null)
         </ul>
     </section>
 }
-
-<h1>Admin Dashboard</h1>
 
 @code {
     [Inject] private ICvAdminStoreService AdminStore { get; set; } = default!;

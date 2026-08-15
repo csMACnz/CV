@@ -21,10 +21,7 @@ app.UseCors();
 // ContentRoot config key lets the Aspire AppHost override the default path.
 app.MapGet("/experience", (IConfiguration config, IWebHostEnvironment env) =>
 {
-    var contentRoot = config["ContentRoot"]
-        ?? Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", "..", "content"));
-
-    var payload = ContentAggregator.Aggregate(contentRoot);
+    var payload = ContentAggregator.Aggregate(ResolveContentRoot(config, env));
     return Results.Ok(payload);
 });
 
@@ -32,12 +29,13 @@ app.MapGet("/experience", (IConfiguration config, IWebHostEnvironment env) =>
 // for the local Admin UI. Bound exclusively to localhost via .NET Aspire service discovery.
 app.MapGet("/api/admin/cv", (IConfiguration config, IWebHostEnvironment env) =>
 {
-    var contentRoot = config["ContentRoot"]
-        ?? Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", "..", "content"));
-
-    var payload = ContentAggregator.Aggregate(contentRoot);
+    var payload = ContentAggregator.Aggregate(ResolveContentRoot(config, env));
     return Results.Ok(payload);
 });
+
+static string ResolveContentRoot(IConfiguration config, IWebHostEnvironment env) =>
+    config["ContentRoot"]
+    ?? Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", "..", "content"));
 #endif
 
 app.Run();
