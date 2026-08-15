@@ -16,14 +16,6 @@ else if (_error is not null)
 else if (_data is not null)
 {
     <section>
-        <h2>Profile</h2>
-        <dl>
-            <dt>Name</dt><dd>@_data.Profile.Name</dd>
-            <dt>Title</dt><dd>@_data.Profile.Title</dd>
-            <dt>Location</dt><dd>@_data.Profile.Location</dd>
-        </dl>
-    </section>
-    <section>
         <h2>Timeline</h2>
         <ul>
             @foreach (var entry in _data.Timeline)
@@ -32,6 +24,7 @@ else if (_data is not null)
             }
         </ul>
     </section>
+    <ProfileEditForm InitialProfile="_data.Profile" />
 }
 
 @code {

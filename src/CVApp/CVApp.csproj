@@ -25,6 +25,7 @@
   -->
   <ItemGroup Condition="'$(Configuration)' != 'Debug'">
     <Content Remove="Pages\AdminDashboard.razor" />
+    <Content Remove="Pages\ProfileEditForm.razor" />
   </ItemGroup>
 
   <Target Name="AggregateExperienceJson" BeforeTargets="BeforeBuild" Condition="'$(Configuration)' == 'Release'">
