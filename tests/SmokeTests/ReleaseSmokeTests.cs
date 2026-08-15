@@ -17,7 +17,18 @@ public class ReleaseSmokeTests
     [Fact]
     public async Task ReleasePublishArtifacts_RenderProfileHeaderAtRootAndExperienceRoutes()
     {
-        using var publish = await RunDotnetPublishReleaseAsync();
+        await AssertPublishedSiteRendersAsync("/CV/");
+    }
+
+    [Fact]
+    public async Task ReleasePublishArtifacts_RenderProfileHeaderAtPreviewRoutes()
+    {
+        await AssertPublishedSiteRendersAsync("/CV/preview/pr-42/");
+    }
+
+    private static async Task AssertPublishedSiteRendersAsync(string baseHref)
+    {
+        using var publish = await RunDotnetPublishReleaseAsync(baseHref);
         Assert.True(publish.Succeeded,
             $"Release publish failed (exit code {publish.ExitCode}).\nOutput:\n{publish.Output}\nError:\n{publish.Error}");
 
@@ -26,9 +37,10 @@ public class ReleaseSmokeTests
         Assert.True(File.Exists(indexHtmlPath), $"Expected published index.html at {indexHtmlPath}");
 
         var indexHtml = await File.ReadAllTextAsync(indexHtmlPath);
-        Assert.Contains("<base href=\"/CV/\" />", indexHtml);
+        Assert.Contains($"<base href=\"{baseHref}\" />", indexHtml);
 
-        await using var harness = await CvStaticHarness.StartAsync(publishWwwroot);
+        var routePrefix = baseHref.TrimEnd('/');
+        await using var harness = await CvStaticHarness.StartAsync(publishWwwroot, routePrefix);
 
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
@@ -57,12 +69,12 @@ public class ReleaseSmokeTests
                 consoleErrors.Add(message.Text);
         };
 
-        await AssertProfileHeaderAsync(page, $"{harness.BaseUrl}/CV/", pageErrors, consoleErrors, failedRequests);
-        await AssertProfileHeaderAsync(page, $"{harness.BaseUrl}/CV/experience", pageErrors, consoleErrors, failedRequests);
+        await AssertProfileHeaderAsync(page, $"{harness.BaseUrl}{baseHref}", pageErrors, consoleErrors, failedRequests);
+        await AssertProfileHeaderAsync(page, $"{harness.BaseUrl}{routePrefix}/experience", pageErrors, consoleErrors, failedRequests);
 
         Assert.Empty(pageErrors);
         Assert.Empty(consoleErrors);
-        Assert.Empty(failedRequests.Where(r => r.Contains("/CV/_framework/", StringComparison.OrdinalIgnoreCase)));
+        Assert.Empty(failedRequests.Where(r => r.Contains($"{routePrefix}/_framework/", StringComparison.OrdinalIgnoreCase)));
 
         var blazorErrorUiVisible = await page.Locator("#blazor-error-ui").IsVisibleAsync();
         Assert.False(blazorErrorUiVisible, "Blazor error UI is visible, indicating app startup failure.");
@@ -125,12 +137,12 @@ public class ReleaseSmokeTests
         Assert.Equal(expectedText, actualText);
     }
 
-    private static async Task<BuildResult> RunDotnetPublishReleaseAsync()
+    private static async Task<BuildResult> RunDotnetPublishReleaseAsync(string baseHref = "/CV/")
     {
         var outputDir = Path.Combine(Path.GetTempPath(), $"cv-smoke-publish-{Guid.NewGuid():N}");
         var projectPath = GetAssemblyMetadata("CVAppProjectPath");
         var args =
-            $"publish \"{projectPath}\" -c Release --nologo -o \"{outputDir}\" -p:ReleaseBaseHref=/CV/";
+            $"publish \"{projectPath}\" -c Release --nologo -o \"{outputDir}\" -p:ReleaseBaseHref=\"{baseHref}\"";
         var result = await RunDotnetAsync(args, GetAssemblyMetadata("RepositoryRoot"));
         return new BuildResult(result.ExitCode, result.Output, result.Error, outputDir);
     }
@@ -178,20 +190,22 @@ sealed class CvStaticHarness : IAsyncDisposable
 
     public string BaseUrl { get; }
 
-    public static async Task<CvStaticHarness> StartAsync(string publishedWwwroot)
+    public static async Task<CvStaticHarness> StartAsync(string publishedWwwroot, string routePrefix = "/CV")
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseUrls("http://127.0.0.1:0");
 
         var hostRoot = Path.Combine(Path.GetTempPath(), $"cv-smoke-host-{Guid.NewGuid():N}");
-        var cvRoot = Path.Combine(hostRoot, "CV");
+        var normalizedRoutePrefix = routePrefix.Trim('/');
+        var cvRoot = Path.Combine(hostRoot,
+            normalizedRoutePrefix.Replace('/', Path.DirectorySeparatorChar));
         DirectoryCopy(publishedWwwroot, cvRoot);
 
         var app = builder.Build();
 
         app.MapGet("/", context =>
         {
-            context.Response.Redirect("/CV/");
+            context.Response.Redirect($"{routePrefix.TrimEnd('/')}/");
             return Task.CompletedTask;
         });
 
@@ -205,7 +219,7 @@ sealed class CvStaticHarness : IAsyncDisposable
         app.MapFallback(async context =>
         {
             var path = context.Request.Path.Value ?? string.Empty;
-            if (!path.StartsWith("/CV", StringComparison.OrdinalIgnoreCase))
+            if (!path.StartsWith(routePrefix, StringComparison.OrdinalIgnoreCase))
             {
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
                 return;

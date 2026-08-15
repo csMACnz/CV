@@ -1,8 +1,8 @@
 name: Deploy to GitHub Pages
 
-# Deploys the Blazor WebAssembly static site to GitHub Pages on every push to main.
-# The site is published at https://csmacnz.github.io/CV/ and serves the
-# experience.json payload at /CV/data/experience.json.
+# Deploys the Blazor WebAssembly static site to the gh-pages branch on every
+# push to main. GitHub Pages must be configured to publish from that branch so
+# production content and PR previews can coexist under /CV/ and /CV/preview/.
 
 on:
   push:
@@ -12,21 +12,17 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 # Allow only one concurrent deployment; cancel any in-progress run
 concurrency:
-  group: pages
+  group: pages-production
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build for GitHub Pages
+  build-and-deploy:
+    name: Build and deploy production site
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -70,22 +66,12 @@ jobs:
         # names start with an underscore (e.g. _framework/).
         run: touch publish/wwwroot/.nojekyll
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy production site to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4.7.3
         with:
-          path: publish/wwwroot
-
-  deploy:
-    name: Deploy to GitHub Pages
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    permissions:
-      pages: write
-      id-token: write
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          branch: gh-pages
+          folder: publish/wwwroot
+          clean-exclude: |
+            preview
+          force: false
+          commit-message: "Deploy production site from ${{ github.sha }}"
