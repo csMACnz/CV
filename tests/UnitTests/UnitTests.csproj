@@ -25,6 +25,7 @@
   -->
   <ItemGroup>
     <Compile Include="..\..\src\CVApp\Services\ExperienceDataService.cs" LinkBase="Services" />
+    <Compile Include="..\..\src\CVApp\Services\PrintConfigurationService.cs" LinkBase="Services" />
     <Compile Include="..\..\src\CVApp\Services\SkillHighlightService.cs" LinkBase="Services" />
   </ItemGroup>
 

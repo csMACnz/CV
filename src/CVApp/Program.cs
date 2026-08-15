@@ -10,5 +10,6 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddScoped<ExperienceDataService>();
 builder.Services.AddSingleton<SkillHighlightService>();
+builder.Services.AddSingleton<PrintConfigurationService>();
 
 await builder.Build().RunAsync();

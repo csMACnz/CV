@@ -1,8 +1,31 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
+@implements IDisposable
+@inject CVApp.Services.PrintConfigurationService PrintConfigurationService
+
+<div class="@RootCssClass">
     <main>
         <article class="content">
             @Body
         </article>
     </main>
 </div>
+
+@code {
+    private string RootCssClass =>
+        $"page cv-app-root {PrintConfigurationService.GetTimelineScopeClass()} {PrintConfigurationService.GetProjectVerbosityClass()} {PrintConfigurationService.GetSkillLayoutClass()}";
+
+    protected override void OnInitialized()
+    {
+        PrintConfigurationService.Changed += OnPrintConfigurationChanged;
+    }
+
+    private void OnPrintConfigurationChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        PrintConfigurationService.Changed -= OnPrintConfigurationChanged;
+    }
+}

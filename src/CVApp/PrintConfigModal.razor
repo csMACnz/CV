@@ -1,0 +1,70 @@
+@using CVApp.Services
+
+<div class="modal-backdrop no-print" role="presentation">
+    <section class="print-config-modal" role="dialog" aria-modal="true" aria-labelledby="print-config-modal-title">
+        <header class="print-config-modal__header">
+            <h2 id="print-config-modal-title">Print Configuration</h2>
+        </header>
+
+        <div class="print-config-modal__content">
+            <label class="print-config-modal__field">
+                <span>Timeline scope</span>
+                <select @bind="_timelineScope">
+                    <option value="@TimelineScope.FullHistory">Full History</option>
+                    <option value="@TimelineScope.Last5Years">Last 5 Years</option>
+                    <option value="@TimelineScope.Last10Years">Last 10 Years</option>
+                </select>
+            </label>
+
+            <label class="print-config-modal__field">
+                <span>Project detail</span>
+                <select @bind="_projectVerbosity">
+                    <option value="@ProjectVerbosity.Brief">Brief Bullet Points Only</option>
+                    <option value="@ProjectVerbosity.Full">Full Narrative</option>
+                </select>
+            </label>
+
+            <label class="print-config-modal__field">
+                <span>Skill layout</span>
+                <select @bind="_skillLayout">
+                    <option value="@SkillLayout.Compact">Compact Keyword List</option>
+                    <option value="@SkillLayout.Matrix">Matrix</option>
+                </select>
+            </label>
+        </div>
+
+        <footer class="print-config-modal__actions">
+            <button type="button" class="print-config-modal__button" @onclick="OnCancel">Cancel</button>
+            <button type="button" class="print-config-modal__button print-config-modal__button--primary" @onclick="OnGeneratePrint">
+                Generate / Print
+            </button>
+        </footer>
+    </section>
+</div>
+
+@code {
+    private TimelineScope _timelineScope;
+    private ProjectVerbosity _projectVerbosity;
+    private SkillLayout _skillLayout;
+
+    [Parameter, EditorRequired]
+    public PrintConfiguration Configuration { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<PrintConfiguration> GeneratePrintRequested { get; set; }
+
+    [Parameter]
+    public EventCallback CancelRequested { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        _timelineScope = Configuration.TimelineScope;
+        _projectVerbosity = Configuration.ProjectVerbosity;
+        _skillLayout = Configuration.SkillLayout;
+    }
+
+    private Task OnCancel() => CancelRequested.InvokeAsync();
+
+    private Task OnGeneratePrint() => GeneratePrintRequested.InvokeAsync(
+        new PrintConfiguration(_timelineScope, _projectVerbosity, _skillLayout));
+}
