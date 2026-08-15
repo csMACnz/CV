@@ -27,6 +27,17 @@ app.MapGet("/experience", (IConfiguration config, IWebHostEnvironment env) =>
     var payload = ContentAggregator.Aggregate(contentRoot);
     return Results.Ok(payload);
 });
+
+// ADR-004 / ADR-011: Admin aggregate read endpoint — returns the full CvDataSource graph
+// for the local Admin UI. Bound exclusively to localhost via .NET Aspire service discovery.
+app.MapGet("/api/admin/cv", (IConfiguration config, IWebHostEnvironment env) =>
+{
+    var contentRoot = config["ContentRoot"]
+        ?? Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", "..", "content"));
+
+    var payload = ContentAggregator.Aggregate(contentRoot);
+    return Results.Ok(payload);
+});
 #endif
 
 app.Run();

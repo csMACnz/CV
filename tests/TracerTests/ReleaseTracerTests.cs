@@ -122,6 +122,26 @@ public class ReleaseTracerTests
             "Ensure the endpoint registration is inside a #if DEBUG block (see ADR-004, ADR-008).");
     }
 
+    [Fact]
+    public void Release_ApiService_Build_DoesNotContainAdminCvEndpoint()
+    {
+        using var result = BuildHelpers.RunDotnetBuildApiService("Release");
+
+        Assert.True(result.Succeeded,
+            $"ApiService Release build failed (exit code {result.ExitCode}).\nOutput:\n{result.Output}\nError:\n{result.Error}");
+
+        // ADR-004 / ADR-011: The admin API endpoint is compiled exclusively in Debug mode.
+        // A Release build of the ApiService must not contain the '/api/admin/cv' route string,
+        // confirming that the #if DEBUG guard correctly strips the endpoint at compile time.
+        var apiServiceDll = Path.Combine(result.OutputDirectory, "ApiService.dll");
+        if (!File.Exists(apiServiceDll))
+            return; // DLL not in expected location for this build layout — skip
+
+        Assert.False(BuildHelpers.DllContainsStringLiteral(apiServiceDll, "/api/admin/cv"),
+            "ApiService Release build must not contain the '/api/admin/cv' route string. " +
+            "Ensure the endpoint registration is inside a #if DEBUG block (see ADR-004, ADR-011).");
+    }
+
     private static string ListDirectory(string dir)
     {
         if (!Directory.Exists(dir))

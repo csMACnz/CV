@@ -12,4 +12,9 @@ builder.Services.AddScoped<ExperienceDataService>();
 builder.Services.AddSingleton<SkillHighlightService>();
 builder.Services.AddSingleton<PrintConfigurationService>();
 
+#if DEBUG
+// ADR-004 / ADR-011: Admin CMS service is only registered in Debug (local Aspire) builds.
+builder.Services.AddScoped<ICvAdminStoreService, CvAdminStoreService>();
+#endif
+
 await builder.Build().RunAsync();
