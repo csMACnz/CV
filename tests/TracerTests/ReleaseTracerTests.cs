@@ -142,6 +142,24 @@ public class ReleaseTracerTests
             "Ensure the endpoint registration is inside a #if DEBUG block (see ADR-004, ADR-011).");
     }
 
+    [Fact]
+    public void Release_ApiService_Build_DoesNotContainAdminSkillEndpoints()
+    {
+        using var result = BuildHelpers.RunDotnetBuildApiService("Release");
+
+        Assert.True(result.Succeeded,
+            $"ApiService Release build failed (exit code {result.ExitCode}).\nOutput:\n{result.Output}\nError:\n{result.Error}");
+
+        var apiServiceDll = Path.Combine(result.OutputDirectory, "ApiService.dll");
+        if (!File.Exists(apiServiceDll))
+            return;
+
+        Assert.False(BuildHelpers.DllContainsStringLiteral(apiServiceDll, "/api/admin/skills/categories"),
+            "ApiService Release build must not contain the '/api/admin/skills/categories' route string.");
+        Assert.False(BuildHelpers.DllContainsStringLiteral(apiServiceDll, "/api/admin/skills/"),
+            "ApiService Release build must not contain the '/api/admin/skills/{skillId}' route string.");
+    }
+
     private static string ListDirectory(string dir)
     {
         if (!Directory.Exists(dir))
