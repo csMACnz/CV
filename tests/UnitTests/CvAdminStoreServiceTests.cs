@@ -22,8 +22,8 @@ public class CvAdminStoreServiceTests
                 ])
             ],
             [
-                new SkillGroup("Languages", [
-                    new SkillNode("csharp", "C#", "https://learn.microsoft.com/dotnet/csharp/")
+                new AdminSkillGroup("Languages", [
+                    new AdminSkillNode("csharp", "C#", "https://learn.microsoft.com/dotnet/csharp/")
                 ])
             ]);
 
@@ -165,7 +165,7 @@ public class CvAdminStoreServiceTests
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") };
         var service = new CvAdminStoreService(httpClient);
 
-        await service.AddSkillAsync("Languages", new SkillNode("csharp", "C#", "https://learn.microsoft.com/dotnet/csharp/"));
+        await service.AddSkillAsync("Languages", new AdminSkillNode("csharp", "C#", "https://learn.microsoft.com/dotnet/csharp/"));
 
         Assert.NotNull(handler.LastRequestUri);
         Assert.Equal("/api/admin/skills", handler.LastRequestUri!.AbsolutePath);
@@ -173,6 +173,20 @@ public class CvAdminStoreServiceTests
         Assert.Contains("Languages", handler.LastRequestBody);
         Assert.Contains("csharp", handler.LastRequestBody);
         Assert.Contains("C#", handler.LastRequestBody);
+    }
+
+    [Fact]
+    public async Task DeleteSkillCategoryAsync_SendsDeleteRequestToCorrectRoute()
+    {
+        var handler = new FakeHttpMessageHandler(HttpStatusCode.OK, string.Empty, "application/json");
+        var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") };
+        var service = new CvAdminStoreService(httpClient);
+
+        await service.DeleteSkillCategoryAsync("Languages");
+
+        Assert.NotNull(handler.LastRequestUri);
+        Assert.Equal("/api/admin/skills/categories/Languages", handler.LastRequestUri!.AbsolutePath);
+        Assert.Equal(HttpMethod.Delete, handler.LastRequestMethod);
     }
 
     [Fact]

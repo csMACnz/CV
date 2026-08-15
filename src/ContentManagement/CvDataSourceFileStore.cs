@@ -20,13 +20,19 @@ public sealed class CvDataSourceFileStore
         string path,
         ExperiencePayload fallback,
         CancellationToken cancellationToken = default)
+        => await LoadAsync(path, () => fallback, cancellationToken);
+
+    public async Task<CvDataSourceDocument> LoadAsync(
+        string path,
+        Func<ExperiencePayload> fallbackFactory,
+        CancellationToken cancellationToken = default)
     {
-        var root = await LoadRootAsync(path, fallback, cancellationToken);
+        var root = await LoadRootAsync(path, fallbackFactory, cancellationToken);
 
         var profile = root["profile"]?.Deserialize<Profile>(CamelCaseOptions)
-            ?? fallback.Profile;
+            ?? throw new InvalidOperationException("CV data source is missing a profile payload.");
         var timeline = root["timeline"]?.Deserialize<List<TimelineEntry>>(CamelCaseOptions)
-            ?? fallback.Timeline;
+            ?? throw new InvalidOperationException("CV data source is missing a timeline payload.");
         var skillMatrix = root["skillMatrix"]?.Deserialize<List<SkillGroup>>(CamelCaseOptions)
             ?? [];
 
@@ -38,7 +44,14 @@ public sealed class CvDataSourceFileStore
         ExperiencePayload fallback,
         Profile profile,
         CancellationToken cancellationToken = default)
-        => MutateRootAsync(path, fallback, root =>
+        => UpdateProfileAsync(path, () => fallback, profile, cancellationToken);
+
+    public Task UpdateProfileAsync(
+        string path,
+        Func<ExperiencePayload> fallbackFactory,
+        Profile profile,
+        CancellationToken cancellationToken = default)
+        => MutateRootAsync(path, fallbackFactory, root =>
         {
             root["profile"] = JsonSerializer.SerializeToNode(profile, CamelCaseOptions);
         }, cancellationToken);
@@ -48,7 +61,14 @@ public sealed class CvDataSourceFileStore
         ExperiencePayload fallback,
         string categoryName,
         CancellationToken cancellationToken = default)
-        => MutateSkillMatrixAsync(path, fallback, skillMatrix =>
+        => AddSkillCategoryAsync(path, () => fallback, categoryName, cancellationToken);
+
+    public Task AddSkillCategoryAsync(
+        string path,
+        Func<ExperiencePayload> fallbackFactory,
+        string categoryName,
+        CancellationToken cancellationToken = default)
+        => MutateSkillMatrixAsync(path, fallbackFactory, skillMatrix =>
         {
             if (string.IsNullOrWhiteSpace(categoryName))
                 throw new ArgumentException("Category name is required.", nameof(categoryName));
@@ -65,7 +85,15 @@ public sealed class CvDataSourceFileStore
         string categoryName,
         string newCategoryName,
         CancellationToken cancellationToken = default)
-        => MutateSkillMatrixAsync(path, fallback, skillMatrix =>
+        => RenameSkillCategoryAsync(path, () => fallback, categoryName, newCategoryName, cancellationToken);
+
+    public Task RenameSkillCategoryAsync(
+        string path,
+        Func<ExperiencePayload> fallbackFactory,
+        string categoryName,
+        string newCategoryName,
+        CancellationToken cancellationToken = default)
+        => MutateSkillMatrixAsync(path, fallbackFactory, skillMatrix =>
         {
             if (string.IsNullOrWhiteSpace(newCategoryName))
                 throw new ArgumentException("New category name is required.", nameof(newCategoryName));
@@ -92,7 +120,14 @@ public sealed class CvDataSourceFileStore
         ExperiencePayload fallback,
         string categoryName,
         CancellationToken cancellationToken = default)
-        => MutateSkillMatrixAsync(path, fallback, skillMatrix =>
+        => DeleteSkillCategoryAsync(path, () => fallback, categoryName, cancellationToken);
+
+    public Task DeleteSkillCategoryAsync(
+        string path,
+        Func<ExperiencePayload> fallbackFactory,
+        string categoryName,
+        CancellationToken cancellationToken = default)
+        => MutateSkillMatrixAsync(path, fallbackFactory, skillMatrix =>
         {
             var removedCount = skillMatrix.RemoveAll(group =>
                 string.Equals(group.Name, categoryName, StringComparison.OrdinalIgnoreCase));
@@ -107,7 +142,15 @@ public sealed class CvDataSourceFileStore
         string categoryName,
         Skill skill,
         CancellationToken cancellationToken = default)
-        => MutateSkillMatrixAsync(path, fallback, skillMatrix =>
+        => AddSkillAsync(path, () => fallback, categoryName, skill, cancellationToken);
+
+    public Task AddSkillAsync(
+        string path,
+        Func<ExperiencePayload> fallbackFactory,
+        string categoryName,
+        Skill skill,
+        CancellationToken cancellationToken = default)
+        => MutateSkillMatrixAsync(path, fallbackFactory, skillMatrix =>
         {
             if (string.IsNullOrWhiteSpace(skill.Id))
                 throw new ArgumentException("Skill ID is required.", nameof(skill));
@@ -138,7 +181,16 @@ public sealed class CvDataSourceFileStore
         string name,
         string? url,
         CancellationToken cancellationToken = default)
-        => MutateSkillMatrixAsync(path, fallback, skillMatrix =>
+        => UpdateSkillAsync(path, () => fallback, skillId, name, url, cancellationToken);
+
+    public Task UpdateSkillAsync(
+        string path,
+        Func<ExperiencePayload> fallbackFactory,
+        string skillId,
+        string name,
+        string? url,
+        CancellationToken cancellationToken = default)
+        => MutateSkillMatrixAsync(path, fallbackFactory, skillMatrix =>
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Skill name is required.", nameof(name));
@@ -160,7 +212,14 @@ public sealed class CvDataSourceFileStore
         ExperiencePayload fallback,
         string skillId,
         CancellationToken cancellationToken = default)
-        => MutateSkillMatrixAsync(path, fallback, skillMatrix =>
+        => DeleteSkillAsync(path, () => fallback, skillId, cancellationToken);
+
+    public Task DeleteSkillAsync(
+        string path,
+        Func<ExperiencePayload> fallbackFactory,
+        string skillId,
+        CancellationToken cancellationToken = default)
+        => MutateSkillMatrixAsync(path, fallbackFactory, skillMatrix =>
         {
             var located = FindSkill(skillMatrix, skillId);
             if (located is null)
@@ -171,10 +230,10 @@ public sealed class CvDataSourceFileStore
 
     private static async Task MutateSkillMatrixAsync(
         string path,
-        ExperiencePayload fallback,
+        Func<ExperiencePayload> fallbackFactory,
         Action<List<SkillGroup>> mutate,
         CancellationToken cancellationToken)
-        => await MutateRootAsync(path, fallback, root =>
+        => await MutateRootAsync(path, fallbackFactory, root =>
         {
             var skillMatrix = root["skillMatrix"]?.Deserialize<List<SkillGroup>>(CamelCaseOptions) ?? [];
             mutate(skillMatrix);
@@ -183,11 +242,11 @@ public sealed class CvDataSourceFileStore
 
     private static async Task MutateRootAsync(
         string path,
-        ExperiencePayload fallback,
+        Func<ExperiencePayload> fallbackFactory,
         Action<JsonObject> mutate,
         CancellationToken cancellationToken)
     {
-        var root = await LoadRootAsync(path, fallback, cancellationToken);
+        var root = await LoadRootAsync(path, fallbackFactory, cancellationToken);
         mutate(root);
 
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
@@ -196,7 +255,7 @@ public sealed class CvDataSourceFileStore
 
     private static async Task<JsonObject> LoadRootAsync(
         string path,
-        ExperiencePayload fallback,
+        Func<ExperiencePayload> fallbackFactory,
         CancellationToken cancellationToken)
     {
         JsonObject root;
@@ -205,13 +264,15 @@ public sealed class CvDataSourceFileStore
             var existing = await File.ReadAllTextAsync(path, cancellationToken);
             root = JsonNode.Parse(existing)?.AsObject() ?? new JsonObject();
         }
-        catch (FileNotFoundException)
+        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
         {
             root = new JsonObject();
         }
 
-        root["profile"] ??= JsonSerializer.SerializeToNode(fallback.Profile, CamelCaseOptions);
-        root["timeline"] ??= JsonSerializer.SerializeToNode(fallback.Timeline, CamelCaseOptions);
+        var fallback = new Lazy<ExperiencePayload>(fallbackFactory);
+
+        root["profile"] ??= JsonSerializer.SerializeToNode(fallback.Value.Profile, CamelCaseOptions);
+        root["timeline"] ??= JsonSerializer.SerializeToNode(fallback.Value.Timeline, CamelCaseOptions);
         root["skillMatrix"] ??= JsonSerializer.SerializeToNode(new List<SkillGroup>(), CamelCaseOptions);
 
         return root;

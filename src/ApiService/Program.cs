@@ -31,8 +31,9 @@ app.MapGet("/experience", (IConfiguration config, IWebHostEnvironment env) =>
 // for the local Admin UI. Bound exclusively to localhost via .NET Aspire service discovery.
 app.MapGet("/api/admin/cv", async (IConfiguration config, IWebHostEnvironment env) =>
 {
-    var payload = ContentAggregator.Aggregate(ResolveContentRoot(config, env));
-    var cvDataSource = await cvDataSourceStore.LoadAsync(ResolveCvDataSourcePath(config, env), payload);
+    var cvDataSource = await cvDataSourceStore.LoadAsync(
+        ResolveCvDataSourcePath(config, env),
+        () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)));
     return Results.Ok(cvDataSource);
 });
 
@@ -40,16 +41,20 @@ app.MapGet("/api/admin/cv", async (IConfiguration config, IWebHostEnvironment en
 // wwwroot/data/cv-datasource.json without disturbing other root keys (SkillMatrix, Timeline).
 app.MapPut("/api/admin/profile", async (Profile profile, IConfiguration config, IWebHostEnvironment env) =>
 {
-    var payload = ContentAggregator.Aggregate(ResolveContentRoot(config, env));
-    await cvDataSourceStore.UpdateProfileAsync(ResolveCvDataSourcePath(config, env), payload, profile);
-    return Results.Ok();
+    return await ExecuteMutationAsync(() =>
+        cvDataSourceStore.UpdateProfileAsync(
+            ResolveCvDataSourcePath(config, env),
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
+            profile));
 });
 
 app.MapPost("/api/admin/skills/categories", async (CreateSkillCategoryRequest request, IConfiguration config, IWebHostEnvironment env) =>
 {
-    var payload = ContentAggregator.Aggregate(ResolveContentRoot(config, env));
     return await ExecuteMutationAsync(() =>
-        cvDataSourceStore.AddSkillCategoryAsync(ResolveCvDataSourcePath(config, env), payload, request.Name));
+        cvDataSourceStore.AddSkillCategoryAsync(
+            ResolveCvDataSourcePath(config, env),
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
+            request.Name));
 });
 
 app.MapPut("/api/admin/skills/categories/{categoryName}", async (
@@ -58,9 +63,12 @@ app.MapPut("/api/admin/skills/categories/{categoryName}", async (
     IConfiguration config,
     IWebHostEnvironment env) =>
 {
-    var payload = ContentAggregator.Aggregate(ResolveContentRoot(config, env));
     return await ExecuteMutationAsync(() =>
-        cvDataSourceStore.RenameSkillCategoryAsync(ResolveCvDataSourcePath(config, env), payload, categoryName, request.NewName));
+        cvDataSourceStore.RenameSkillCategoryAsync(
+            ResolveCvDataSourcePath(config, env),
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
+            categoryName,
+            request.NewName));
 });
 
 app.MapDelete("/api/admin/skills/categories/{categoryName}", async (
@@ -68,18 +76,19 @@ app.MapDelete("/api/admin/skills/categories/{categoryName}", async (
     IConfiguration config,
     IWebHostEnvironment env) =>
 {
-    var payload = ContentAggregator.Aggregate(ResolveContentRoot(config, env));
     return await ExecuteMutationAsync(() =>
-        cvDataSourceStore.DeleteSkillCategoryAsync(ResolveCvDataSourcePath(config, env), payload, categoryName));
+        cvDataSourceStore.DeleteSkillCategoryAsync(
+            ResolveCvDataSourcePath(config, env),
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
+            categoryName));
 });
 
 app.MapPost("/api/admin/skills", async (CreateSkillRequest request, IConfiguration config, IWebHostEnvironment env) =>
 {
-    var payload = ContentAggregator.Aggregate(ResolveContentRoot(config, env));
     return await ExecuteMutationAsync(() =>
         cvDataSourceStore.AddSkillAsync(
             ResolveCvDataSourcePath(config, env),
-            payload,
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
             request.CategoryName,
             new Skill(request.Id, request.Name, request.Url)));
 });
@@ -90,11 +99,10 @@ app.MapPut("/api/admin/skills/{skillId}", async (
     IConfiguration config,
     IWebHostEnvironment env) =>
 {
-    var payload = ContentAggregator.Aggregate(ResolveContentRoot(config, env));
     return await ExecuteMutationAsync(() =>
         cvDataSourceStore.UpdateSkillAsync(
             ResolveCvDataSourcePath(config, env),
-            payload,
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
             skillId,
             request.Name,
             request.Url));
@@ -105,9 +113,11 @@ app.MapDelete("/api/admin/skills/{skillId}", async (
     IConfiguration config,
     IWebHostEnvironment env) =>
 {
-    var payload = ContentAggregator.Aggregate(ResolveContentRoot(config, env));
     return await ExecuteMutationAsync(() =>
-        cvDataSourceStore.DeleteSkillAsync(ResolveCvDataSourcePath(config, env), payload, skillId));
+        cvDataSourceStore.DeleteSkillAsync(
+            ResolveCvDataSourcePath(config, env),
+            () => ContentAggregator.Aggregate(ResolveContentRoot(config, env)),
+            skillId));
 });
 
 static string ResolveContentRoot(IConfiguration config, IWebHostEnvironment env) =>

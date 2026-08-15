@@ -146,7 +146,7 @@ public class DebugTracerTests
 
         Assert.True(BuildHelpers.DllContainsStringLiteral(apiServiceDll, "/api/admin/skills/categories"),
             "ApiService Debug build must include the admin category CRUD route '/api/admin/skills/categories'.");
-        Assert.True(BuildHelpers.DllContainsStringLiteral(apiServiceDll, "/api/admin/skills/"),
+        Assert.True(BuildHelpers.DllContainsStringLiteral(apiServiceDll, "/api/admin/skills/{skillId}"),
             "ApiService Debug build must include the admin skill CRUD route '/api/admin/skills/{skillId}'.");
     }
 }

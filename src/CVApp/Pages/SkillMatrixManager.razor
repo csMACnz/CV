@@ -61,11 +61,11 @@
 </section>
 
 @code {
-    [Parameter, EditorRequired] public IReadOnlyList<SkillGroup> InitialSkillMatrix { get; set; } = [];
+    [Parameter, EditorRequired] public IReadOnlyList<AdminSkillGroup> InitialSkillMatrix { get; set; } = [];
     [Inject] private ICvAdminStoreService AdminStore { get; set; } = default!;
 
     private List<EditableSkillGroup> _categories = [];
-    private IReadOnlyList<SkillGroup>? _lastSeenSkillMatrix;
+    private IReadOnlyList<AdminSkillGroup>? _lastSeenSkillMatrix;
     private string _newCategoryName = string.Empty;
     private bool _busy;
     private string? _successMessage;
@@ -97,6 +97,13 @@
     private async Task AddCategoryAsync()
     {
         var categoryName = _newCategoryName.Trim();
+        if (string.IsNullOrWhiteSpace(categoryName))
+        {
+            _successMessage = null;
+            _errorMessage = "Category name is required.";
+            return;
+        }
+
         await ExecuteAsync(
             () => AdminStore.AddSkillCategoryAsync(categoryName),
             () =>
@@ -116,6 +123,12 @@
         var category = _categories[categoryIndex];
         var originalName = category.OriginalName;
         var updatedName = category.Name.Trim();
+        if (string.IsNullOrWhiteSpace(updatedName))
+        {
+            _successMessage = null;
+            _errorMessage = "Category name is required.";
+            return;
+        }
 
         await ExecuteAsync(
             () => AdminStore.RenameSkillCategoryAsync(originalName, updatedName),
@@ -139,10 +152,16 @@
     private async Task AddSkillAsync(int categoryIndex)
     {
         var category = _categories[categoryIndex];
-        var skill = new SkillNode(
+        var skill = new AdminSkillNode(
             category.NewSkillId.Trim(),
             category.NewSkillName.Trim(),
             NormalizeUrl(category.NewSkillUrl));
+        if (string.IsNullOrWhiteSpace(skill.Id) || string.IsNullOrWhiteSpace(skill.Name))
+        {
+            _successMessage = null;
+            _errorMessage = "Skill ID and name are required.";
+            return;
+        }
 
         await ExecuteAsync(
             () => AdminStore.AddSkillAsync(category.OriginalName, skill),

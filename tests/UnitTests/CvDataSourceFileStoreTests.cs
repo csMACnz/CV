@@ -79,6 +79,61 @@ public class CvDataSourceFileStoreTests
     }
 
     [Fact]
+    public async Task RenameSkillCategoryAsync_RenamesCategoryWithoutChangingNestedSkills()
+    {
+        var store = new CvDataSourceFileStore();
+        var fallback = CreateFallbackPayload();
+        var path = CreateTempPath();
+
+        await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new
+        {
+            profile = new { name = "Stored Name", title = "Stored Title", bio = "Stored Bio", location = "Stored Location", links = Array.Empty<object>() },
+            timeline = new[] { new { company = "Stored Co", period = "2024", location = "Remote", roles = Array.Empty<object>() } },
+            skillMatrix = new[]
+            {
+                new
+                {
+                    name = "Languages",
+                    skills = new[]
+                    {
+                        new { id = "csharp", name = "C#", url = "https://learn.microsoft.com/dotnet/csharp/" }
+                    }
+                }
+            }
+        }, CamelCaseOptions));
+
+        await store.RenameSkillCategoryAsync(path, fallback, "Languages", "Platforms");
+        var result = await store.LoadAsync(path, fallback);
+
+        Assert.Single(result.SkillMatrix);
+        Assert.Equal("Platforms", result.SkillMatrix[0].Name);
+        Assert.Single(result.SkillMatrix[0].Skills);
+        Assert.Equal("csharp", result.SkillMatrix[0].Skills[0].Id);
+    }
+
+    [Fact]
+    public async Task RenameSkillCategoryAsync_ThrowsWhenNewNameAlreadyExists()
+    {
+        var store = new CvDataSourceFileStore();
+        var fallback = CreateFallbackPayload();
+        var path = CreateTempPath();
+
+        await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new
+        {
+            profile = new { name = "Stored Name", title = "Stored Title", bio = "Stored Bio", location = "Stored Location", links = Array.Empty<object>() },
+            timeline = new[] { new { company = "Stored Co", period = "2024", location = "Remote", roles = Array.Empty<object>() } },
+            skillMatrix = new[]
+            {
+                new { name = "Languages", skills = Array.Empty<object>() },
+                new { name = "Platforms", skills = Array.Empty<object>() }
+            }
+        }, CamelCaseOptions));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            store.RenameSkillCategoryAsync(path, fallback, "Languages", "Platforms"));
+    }
+
+    [Fact]
     public async Task DeleteSkillAsync_RemovesSkillFromCategory()
     {
         var store = new CvDataSourceFileStore();
@@ -108,6 +163,27 @@ public class CvDataSourceFileStoreTests
         Assert.Single(result.SkillMatrix);
         Assert.Empty(result.SkillMatrix[0].Skills);
         Assert.Equal("Stored Bio", result.Profile.Bio);
+    }
+
+    [Fact]
+    public async Task DeleteSkillCategoryAsync_ThrowsWhenCategoryDoesNotExist()
+    {
+        var store = new CvDataSourceFileStore();
+        var fallback = CreateFallbackPayload();
+        var path = CreateTempPath();
+
+        await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new
+        {
+            profile = new { name = "Stored Name", title = "Stored Title", bio = "Stored Bio", location = "Stored Location", links = Array.Empty<object>() },
+            timeline = new[] { new { company = "Stored Co", period = "2024", location = "Remote", roles = Array.Empty<object>() } },
+            skillMatrix = new[]
+            {
+                new { name = "Languages", skills = Array.Empty<object>() }
+            }
+        }, CamelCaseOptions));
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            store.DeleteSkillCategoryAsync(path, fallback, "Missing"));
     }
 
     private static ExperiencePayload CreateFallbackPayload()

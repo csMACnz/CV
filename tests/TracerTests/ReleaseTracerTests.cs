@@ -156,7 +156,7 @@ public class ReleaseTracerTests
 
         Assert.False(BuildHelpers.DllContainsStringLiteral(apiServiceDll, "/api/admin/skills/categories"),
             "ApiService Release build must not contain the '/api/admin/skills/categories' route string.");
-        Assert.False(BuildHelpers.DllContainsStringLiteral(apiServiceDll, "/api/admin/skills/"),
+        Assert.False(BuildHelpers.DllContainsStringLiteral(apiServiceDll, "/api/admin/skills/{skillId}"),
             "ApiService Release build must not contain the '/api/admin/skills/{skillId}' route string.");
     }
 

@@ -20,11 +20,34 @@ public interface ICvAdminStoreService
     /// </summary>
     Task UpdateProfileAsync(Profile profile, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Creates a new skill category via <c>POST /api/admin/skills/categories</c>.
+    /// </summary>
     Task AddSkillCategoryAsync(string categoryName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Renames an existing skill category via <c>PUT /api/admin/skills/categories/{categoryName}</c>.
+    /// </summary>
     Task RenameSkillCategoryAsync(string categoryName, string newCategoryName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes a skill category and its nested skills via <c>DELETE /api/admin/skills/categories/{categoryName}</c>.
+    /// </summary>
     Task DeleteSkillCategoryAsync(string categoryName, CancellationToken cancellationToken = default);
-    Task AddSkillAsync(string categoryName, SkillNode skill, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Creates a new skill node under the given category via <c>POST /api/admin/skills</c>.
+    /// </summary>
+    Task AddSkillAsync(string categoryName, AdminSkillNode skill, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates an existing skill node via <c>PUT /api/admin/skills/{skillId}</c>.
+    /// </summary>
     Task UpdateSkillAsync(string skillId, string name, string? url, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes an existing skill node via <c>DELETE /api/admin/skills/{skillId}</c>.
+    /// </summary>
     Task DeleteSkillAsync(string skillId, CancellationToken cancellationToken = default);
 }
 
@@ -82,7 +105,7 @@ public class CvAdminStoreService : ICvAdminStoreService
     }
 
     /// <inheritdoc />
-    public async Task AddSkillAsync(string categoryName, SkillNode skill, CancellationToken cancellationToken = default)
+    public async Task AddSkillAsync(string categoryName, AdminSkillNode skill, CancellationToken cancellationToken = default)
     {
         var response = await _httpClient.PostAsJsonAsync(
             "/api/admin/skills",
@@ -111,9 +134,9 @@ public class CvAdminStoreService : ICvAdminStoreService
     }
 }
 
-public record CvAdminDataSource(Profile Profile, IReadOnlyList<TimelineEntry> Timeline, IReadOnlyList<SkillGroup> SkillMatrix);
-public record SkillGroup(string Name, IReadOnlyList<SkillNode> Skills);
-public record SkillNode(string Id, string Name, string? Url);
+public record CvAdminDataSource(Profile Profile, IReadOnlyList<TimelineEntry> Timeline, IReadOnlyList<AdminSkillGroup> SkillMatrix);
+public record AdminSkillGroup(string Name, IReadOnlyList<AdminSkillNode> Skills);
+public record AdminSkillNode(string Id, string Name, string? Url);
 
 internal sealed record CreateSkillCategoryRequest(string Name);
 internal sealed record RenameSkillCategoryRequest(string NewName);
