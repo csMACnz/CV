@@ -1,6 +1,6 @@
 @using CVApp.Services
 
-<div class="project-card">
+<div class="project-card @(IsHighlighted ? "is-highlighted" : string.Empty)">
     <h4 class="project-card__name">@Project.Name</h4>
     @if (!string.IsNullOrWhiteSpace(Project.Narrative))
     {
@@ -20,4 +20,7 @@
 @code {
     [Parameter, EditorRequired]
     public Project Project { get; set; } = default!;
+
+    [Parameter]
+    public bool IsHighlighted { get; set; }
 }

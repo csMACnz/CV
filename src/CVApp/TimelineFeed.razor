@@ -3,11 +3,14 @@
 <div class="timeline-feed" aria-label="Experience timeline">
     @foreach (var entry in Entries)
     {
-        <TimelineCard Entry="@entry" />
+        <TimelineCard Entry="@entry" Highlights="@Highlights" />
     }
 </div>
 
 @code {
     [Parameter, EditorRequired]
     public IReadOnlyList<TimelineEntry> Entries { get; set; } = default!;
+
+    [Parameter]
+    public HighlightMap Highlights { get; set; } = HighlightMap.Empty;
 }

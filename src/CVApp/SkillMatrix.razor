@@ -1,0 +1,33 @@
+@using CVApp.Services
+
+<div class="skill-matrix" aria-label="Skill matrix">
+    @foreach (var skill in Skills)
+    {
+        var isActive = string.Equals(skill, ActiveSkill, StringComparison.OrdinalIgnoreCase);
+        <button class="skill-matrix__node @(isActive ? "skill-matrix__node--active" : string.Empty)"
+                aria-pressed="@isActive.ToString().ToLowerInvariant()"
+                @onclick="() => OnSkillClick(skill)">
+            @skill
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<string> Skills { get; set; } = default!;
+
+    [Parameter]
+    public string? ActiveSkill { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> ActiveSkillChanged { get; set; }
+
+    private async Task OnSkillClick(string skill)
+    {
+        // Toggle: clicking an already-active skill deselects it.
+        var next = string.Equals(skill, ActiveSkill, StringComparison.OrdinalIgnoreCase)
+            ? null
+            : skill;
+        await ActiveSkillChanged.InvokeAsync(next);
+    }
+}
