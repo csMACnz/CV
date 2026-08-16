@@ -48,4 +48,5 @@ internal record ProjectData
 {
     public string? Name { get; init; }
     public List<string>? Skills { get; init; }
+    public string? BriefSummary { get; init; }
 }

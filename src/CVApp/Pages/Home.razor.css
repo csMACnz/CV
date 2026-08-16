@@ -26,8 +26,9 @@
     left: 0;
     top: 0.75rem;
     bottom: 0.75rem;
-    width: 2px;
+    width: 4px;
     background: var(--color-timeline-rail);
+    border-radius: 2px;
 }
 
 /* Timeline card node indicator */
@@ -40,11 +41,11 @@
     position: absolute;
     left: -1.875rem;
     top: 1.25rem;
-    width: 0.75rem;
-    height: 0.75rem;
+    width: 0.875rem;
+    height: 0.875rem;
     border-radius: 50%;
     background: var(--color-card-bg);
-    border: 2px solid var(--color-timeline-rail);
+    border: 3px solid var(--color-timeline-rail);
     z-index: 1;
 }
 

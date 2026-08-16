@@ -1,0 +1,7 @@
+name: Reporting Engine
+briefSummary: Replaced slow ad-hoc SQL queries with a centralised reporting service, reducing report generation time from minutes to seconds.
+skills:
+  - .NET Core
+  - SSRS
+  - SQL Server
+  - Azure Blob Storage

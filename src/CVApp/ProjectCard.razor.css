@@ -54,6 +54,11 @@
     display: none;
 }
 
+.project-card__summary {
+    color: var(--color-muted);
+    font-style: italic;
+}
+
 @media print {
     .project-card__narrative--collapsed {
         display: block !important;

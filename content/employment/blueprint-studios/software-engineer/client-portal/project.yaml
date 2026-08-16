@@ -1,0 +1,7 @@
+name: Client Self-Service Portal
+briefSummary: Built a React and .NET Core customer portal that reduced support ticket volume by 35%.
+skills:
+  - React
+  - TypeScript
+  - .NET Core
+  - PostgreSQL

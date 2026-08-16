@@ -1,0 +1,8 @@
+name: AI Feature Pipeline
+briefSummary: Built an LLM-powered content enrichment pipeline that automated classification tasks previously handled by a team of three analysts.
+skills:
+  - Python
+  - Azure OpenAI
+  - .NET
+  - Redis
+  - Kubernetes

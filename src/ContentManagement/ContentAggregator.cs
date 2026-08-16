@@ -70,7 +70,8 @@ public static class ContentAggregator
                         projects.Add(new Project(
                             projectData.Name ?? Path.GetFileName(projectDir),
                             projectData.Skills ?? [],
-                            narrative));
+                            narrative,
+                            projectData.BriefSummary));
                     }
 
                     roles.Add(new Role(

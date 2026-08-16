@@ -75,6 +75,13 @@
     gap: 0.75rem;
 }
 
+.profile-header__theme-toggle {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 2;
+}
+
 .profile-header__print-button,
 .profile-header__theme-toggle {
     min-height: 2.5rem;

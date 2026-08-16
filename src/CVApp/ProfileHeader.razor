@@ -14,10 +14,10 @@
                     Print / Save PDF
                 </button>
             }
-            <button type="button" class="profile-header__theme-toggle theme-toggle" @onclick="ToggleTheme" aria-label="@(_isDark ? "Switch to light mode" : "Switch to dark mode")">
-                @(_isDark ? "☀ Light" : "☾ Dark")
-            </button>
         </div>
+        <button type="button" class="profile-header__theme-toggle theme-toggle no-print" @onclick="ToggleTheme" aria-label="@(_isDark ? "Switch to light mode" : "Switch to dark mode")">
+            @(_isDark ? "☀ Light" : "☾ Dark")
+        </button>
 
         <div class="profile-header__meta">
             <p class="profile-header__location">@Data.Location</p>

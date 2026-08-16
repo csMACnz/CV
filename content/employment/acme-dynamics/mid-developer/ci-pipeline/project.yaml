@@ -1,0 +1,7 @@
+name: CI/CD Pipeline Overhaul
+briefSummary: Replaced a fragile manual release process with an automated CI/CD pipeline, cutting release time from days to under an hour.
+skills:
+  - Jenkins
+  - Docker
+  - Bash
+  - PowerShell

@@ -3,7 +3,7 @@
 <div class="project-card @(IsHighlighted ? "is-highlighted" : string.Empty)">
     <div class="project-card__header">
         <h4 class="project-card__name">@Project.Name</h4>
-        @if (!string.IsNullOrWhiteSpace(Project.Narrative))
+        @if (!string.IsNullOrWhiteSpace(Project.Narrative) || !string.IsNullOrWhiteSpace(Project.BriefSummary))
         {
             <button type="button"
                     class="card-expand-toggle no-print"
@@ -14,9 +14,13 @@
             </button>
         }
     </div>
-    @if (!string.IsNullOrWhiteSpace(Project.Narrative))
+    @if (_expanded && !string.IsNullOrWhiteSpace(Project.Narrative))
     {
-        <p class="project-card__narrative @(_expanded ? string.Empty : "project-card__narrative--collapsed")">@Project.Narrative</p>
+        <p class="project-card__narrative">@Project.Narrative</p>
+    }
+    @if (!_expanded && !string.IsNullOrWhiteSpace(Project.BriefSummary))
+    {
+        <p class="project-card__narrative project-card__summary">@Project.BriefSummary</p>
     }
     @if (Project.Skills.Count > 0)
     {

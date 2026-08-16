@@ -43,24 +43,39 @@
     border-top: 1px solid var(--color-card-border);
 }
 
+.timeline-card__role-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.timeline-card__role-header-main {
+    display: grid;
+    gap: 0.25rem;
+    flex: 1;
+    min-width: 0;
+}
+
 .timeline-card__role-title {
-    margin: 0 0 0.25rem;
+    margin: 0;
     font-size: 1rem;
     font-weight: 600;
 }
 
 .timeline-card__role-period {
-    margin: 0 0 0.75rem;
+    margin: 0;
     font-size: 0.875rem;
     color: var(--color-muted);
 }
 
-.timeline-card__roles--collapsed {
+.projects-section--collapsed {
     display: none;
 }
 
 @media print {
-    .timeline-card__roles--collapsed {
-        display: block !important;
+    .projects-section--collapsed {
+        display: grid !important;
     }
 }
