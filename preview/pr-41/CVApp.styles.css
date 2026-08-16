@@ -60,8 +60,9 @@ main[b-zuyx7igfci] {
     left: 0;
     top: 0.75rem;
     bottom: 0.75rem;
-    width: 2px;
+    width: 4px;
     background: var(--color-timeline-rail);
+    border-radius: 2px;
 }
 
 /* Timeline card node indicator */
@@ -74,11 +75,11 @@ main[b-zuyx7igfci] {
     position: absolute;
     left: -1.875rem;
     top: 1.25rem;
-    width: 0.75rem;
-    height: 0.75rem;
+    width: 0.875rem;
+    height: 0.875rem;
     border-radius: 50%;
     background: var(--color-card-bg);
-    border: 2px solid var(--color-timeline-rail);
+    border: 3px solid var(--color-timeline-rail);
     z-index: 1;
 }
 
@@ -275,6 +276,13 @@ main[b-zuyx7igfci] {
     gap: 0.75rem;
 }
 
+.profile-header__theme-toggle[b-h1njvz8epe] {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 2;
+}
+
 .profile-header__print-button[b-h1njvz8epe],
 .profile-header__theme-toggle[b-h1njvz8epe] {
     min-height: 2.5rem;
@@ -402,6 +410,11 @@ main[b-zuyx7igfci] {
     display: none;
 }
 
+.project-card__summary[b-s84bawe2hf] {
+    color: var(--color-muted);
+    font-style: italic;
+}
+
 @media print {
     .project-card__narrative--collapsed[b-s84bawe2hf] {
         display: block !important;
@@ -453,24 +466,39 @@ main[b-zuyx7igfci] {
     border-top: 1px solid var(--color-card-border);
 }
 
+.timeline-card__role-header[b-2hjcx0v3pd] {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.timeline-card__role-header-main[b-2hjcx0v3pd] {
+    display: grid;
+    gap: 0.25rem;
+    flex: 1;
+    min-width: 0;
+}
+
 .timeline-card__role-title[b-2hjcx0v3pd] {
-    margin: 0 0 0.25rem;
+    margin: 0;
     font-size: 1rem;
     font-weight: 600;
 }
 
 .timeline-card__role-period[b-2hjcx0v3pd] {
-    margin: 0 0 0.75rem;
+    margin: 0;
     font-size: 0.875rem;
     color: var(--color-muted);
 }
 
-.timeline-card__roles--collapsed[b-2hjcx0v3pd] {
+.projects-section--collapsed[b-2hjcx0v3pd] {
     display: none;
 }
 
 @media print {
-    .timeline-card__roles--collapsed[b-2hjcx0v3pd] {
-        display: block !important;
+    .projects-section--collapsed[b-2hjcx0v3pd] {
+        display: grid !important;
     }
 }

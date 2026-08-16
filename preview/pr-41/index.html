@@ -42,6 +42,13 @@
             document.documentElement.classList.add('is-printing');
         });
         window.addEventListener('afterprint', function () {
+            document.querySelectorAll('.card-expand-toggle').forEach(function (btn) {
+                var saved = btn.getAttribute('data-pre-print-expanded');
+                if (saved !== null) {
+                    btn.setAttribute('aria-expanded', saved);
+                    btn.removeAttribute('data-pre-print-expanded');
+                }
+            });
             document.documentElement.classList.remove('is-printing');
         });
     </script>
