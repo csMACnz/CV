@@ -66,13 +66,8 @@ public class ReleaseSmokeTests
             State = WaitForSelectorState.Visible
         });
 
-        await content.EvaluateAsync("el => el.scrollTop = el.scrollHeight");
-
         var generateButton = page.GetByRole(AriaRole.Button, new() { Name = "Generate / Print" });
-        await generateButton.WaitForAsync(new LocatorWaitForOptions
-        {
-            State = WaitForSelectorState.Visible
-        });
+        await generateButton.ScrollIntoViewIfNeededAsync();
 
         Assert.True(await IsFullyWithinViewportAsync(generateButton),
             "Expected the print modal action buttons to be reachable on mobile after scrolling the modal content.");
