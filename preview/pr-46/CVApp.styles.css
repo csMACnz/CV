@@ -177,7 +177,8 @@ main[b-zuyx7igfci] {
 @media (max-width: 767px) {
     .print-config-modal[b-rf54p89i8r] {
         width: 100%;
-        min-height: 100%;
+        height: 100dvh;
+        min-height: 0;
         border-radius: 0;
         display: flex;
         flex-direction: column;
@@ -190,6 +191,8 @@ main[b-zuyx7igfci] {
 
     .print-config-modal__content[b-rf54p89i8r] {
         flex: 1;
+        min-height: 0;
+        overflow-y: auto;
     }
 }
 
