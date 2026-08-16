@@ -4,6 +4,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CVApp</title>
     <base href="/CV/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
@@ -23,11 +26,31 @@
         <a href="" class="reload">Reload</a><a class="dismiss">🗙</a></div>
     <script>
         window.cvApp = window.cvApp || {};
+        window.cvApp.setTheme = function (theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+        };
         window.cvApp.printCv = function () {
             window.requestAnimationFrame(function () {
                 window.print();
             });
         };
+        // Expand all card narratives before printing so CSS can force them visible
+        window.addEventListener('beforeprint', function () {
+            document.querySelectorAll('.card-expand-toggle').forEach(function (btn) {
+                btn.setAttribute('data-pre-print-expanded', btn.getAttribute('aria-expanded'));
+            });
+            document.documentElement.classList.add('is-printing');
+        });
+        window.addEventListener('afterprint', function () {
+            document.querySelectorAll('.card-expand-toggle').forEach(function (btn) {
+                var saved = btn.getAttribute('data-pre-print-expanded');
+                if (saved !== null) {
+                    btn.setAttribute('aria-expanded', saved);
+                    btn.removeAttribute('data-pre-print-expanded');
+                }
+            });
+            document.documentElement.classList.remove('is-printing');
+        });
     </script>
     <script src="_framework/blazor.webassembly.js">
     </script>
