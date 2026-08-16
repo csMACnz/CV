@@ -1,0 +1,8 @@
+name: Internal Developer Platform
+briefSummary: Led the design of an internal platform that cut new-service bootstrapping time from two weeks to under a day.
+skills:
+  - Terraform
+  - GitHub Actions
+  - .NET
+  - Azure
+  - Backstage

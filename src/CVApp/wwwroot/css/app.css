@@ -1,5 +1,42 @@
+/* ===== Design Tokens ===== */
+:root {
+    --color-bg: #FAFAFA;
+    --color-text: #121212;
+    --color-card-bg: #FFFFFF;
+    --color-card-border: #E5E7EB;
+    --color-timeline-rail: #B0B8C4;
+    --color-muted: #6B7280;
+    --color-skill-pill-bg: #EBF2FF;
+    --color-skill-pill-text: #0976F3;
+    --color-skill-pill-border: #0976F3;
+    --color-link: #0976F3;
+    --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+[data-theme="dark"] {
+    --color-bg: #121212;
+    --color-text: #E0E0E0;
+    --color-card-bg: #1F1F1F;
+    --color-card-border: #333333;
+    --color-timeline-rail: #333333;
+    --color-muted: #9CA3AF;
+    --color-skill-pill-bg: #1a2a3a;
+    --color-skill-pill-text: #60A5FA;
+    --color-skill-pill-border: #60A5FA;
+    --color-link: #60A5FA;
+}
+
+/* ===== Base ===== */
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    transition: background-color 0.2s, color 0.2s;
+}
+
+h1, h2 {
+    font-family: var(--font-display);
 }
 
 h1:focus {
@@ -7,17 +44,17 @@ h1:focus {
 }
 
 a, .btn-link {
-    color: #0071c1;
+    color: var(--color-link);
 }
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background-color: #0976F3;
+    border-color: #0762cc;
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #0976F3;
 }
 
 .content {
@@ -82,7 +119,7 @@ a, .btn-link {
     }
 
         .loading-progress circle:last-child {
-            stroke: #1b6ec2;
+            stroke: #0976F3;
             stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
             transition: stroke-dasharray 0.05s ease-in-out;
         }
@@ -102,7 +139,7 @@ code {
     color: #c02d76;
 }
 
-/* Skill Matrix */
+/* ===== Skill Matrix ===== */
 .skill-matrix {
     display: flex;
     flex-wrap: wrap;
@@ -112,27 +149,27 @@ code {
 
 .skill-matrix__node {
     padding: 0.3rem 0.75rem;
-    border: 1px solid #1b6ec2;
+    border: 1px solid var(--color-skill-pill-border);
     border-radius: 1rem;
     background: transparent;
-    color: #1b6ec2;
+    color: var(--color-skill-pill-text);
     cursor: pointer;
     font-size: 0.875rem;
     transition: background 0.15s, color 0.15s;
 }
 
 .skill-matrix__node:hover {
-    background: #e8f0fe;
+    background: var(--color-skill-pill-bg);
 }
 
 .skill-matrix__node--active {
-    background: #1b6ec2;
+    background: var(--color-skill-pill-border);
     color: #fff;
 }
 
-/* Highlight state */
+/* ===== Highlight state ===== */
 .is-highlighted {
-    outline: 2px solid #1b6ec2;
+    outline: 2px solid var(--color-link);
     outline-offset: 2px;
 }
 
@@ -142,13 +179,16 @@ code {
     transition: opacity 0.2s;
 }
 
+/* ===== Print overrides ===== */
 @media print {
     .no-print,
     .modal-backdrop,
     .top-row,
     .nav-scrollable,
     .navbar-toggler,
-    #blazor-error-ui {
+    #blazor-error-ui,
+    .card-expand-toggle,
+    .theme-toggle {
         display: none !important;
     }
 
@@ -167,11 +207,52 @@ code {
         text-shadow: none !important;
     }
 
+    html, body {
+        font-size: 10pt !important;
+        line-height: 1.3 !important;
+    }
+
+    h2 {
+        font-size: 14pt !important;
+    }
+
     .timeline-card,
     .timeline-card__role,
     .project-card {
         break-inside: avoid;
         page-break-inside: avoid;
+    }
+
+    /* Collapse skill pills into comma-separated text list */
+    .project-card__skills {
+        display: block !important;
+        list-style: none !important;
+        padding: 0 !important;
+        margin: 0.25rem 0 0 !important;
+    }
+
+    .project-card__skills li.project-card__skill-pill {
+        display: inline !important;
+        border: none !important;
+        background: none !important;
+        color: #000 !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        font-size: 9pt !important;
+    }
+
+    .project-card__skills li.project-card__skill-pill::after {
+        content: ", ";
+    }
+
+    .project-card__skills li.project-card__skill-pill:last-child::after {
+        content: "";
+    }
+
+    /* Force all card narratives visible */
+    .project-card__narrative,
+    .timeline-card__narrative {
+        display: block !important;
     }
 
     .cv-app-root.print-projects-brief .project-card__narrative {
@@ -195,5 +276,49 @@ code {
     .cv-app-root .skill-matrix__node {
         border-color: #000 !important;
         color: #000 !important;
+    }
+}
+
+
+
+/* ===== Card expand toggle (shared) ===== */
+.card-expand-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid var(--color-card-border);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--color-muted);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    white-space: nowrap;
+}
+
+.card-expand-toggle:hover,
+.card-expand-toggle:focus-visible {
+    color: var(--color-link);
+    border-color: var(--color-link);
+    background: var(--color-skill-pill-bg);
+}
+
+@media (max-width: 767px) {
+    .card-expand-toggle__label {
+        display: none;
+    }
+
+    .card-expand-toggle {
+        padding: 0.25rem 0.5rem;
+        font-size: 1rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .card-expand-toggle__icon {
+        display: none;
     }
 }

@@ -2,45 +2,73 @@
 
 <div class="timeline-card @(Highlights.IsActive && !Highlights.IsEntryHighlighted(Entry) ? "timeline-card--dimmed" : string.Empty) @(Highlights.IsEntryHighlighted(Entry) ? "is-highlighted" : string.Empty)">
     <div class="timeline-card__header">
-        <h2 class="timeline-card__company">@Entry.Company</h2>
-        @if (!string.IsNullOrWhiteSpace(Entry.Period))
-        {
-            <p class="timeline-card__period">@Entry.Period</p>
-        }
-        @if (!string.IsNullOrWhiteSpace(Entry.Location))
-        {
-            <p class="timeline-card__location">@Entry.Location</p>
-        }
+        <div class="timeline-card__header-main">
+            <h2 class="timeline-card__company">@Entry.Company</h2>
+            @if (!string.IsNullOrWhiteSpace(Entry.Period))
+            {
+                <p class="timeline-card__period">@Entry.Period</p>
+            }
+            @if (!string.IsNullOrWhiteSpace(Entry.Location))
+            {
+                <p class="timeline-card__location">@Entry.Location</p>
+            }
+        </div>
     </div>
     <div class="timeline-card__roles">
         @foreach (var role in Entry.Roles)
         {
+            var roleKey = $"{role.Title}|{role.Start}";
+            var roleExpanded = _roleExpanded.GetValueOrDefault(roleKey, true);
             <div class="timeline-card__role @(Highlights.IsActive && !Highlights.IsRoleHighlighted(role) ? "timeline-card__role--dimmed" : string.Empty) @(Highlights.IsRoleHighlighted(role) ? "is-highlighted" : string.Empty)">
-                <h3 class="timeline-card__role-title">@role.Title</h3>
-                @if (!string.IsNullOrWhiteSpace(role.Start) || !string.IsNullOrWhiteSpace(role.End))
-                {
-                    <p class="timeline-card__role-period">
-                        @(string.IsNullOrWhiteSpace(role.Start) ? string.Empty : role.Start)
-                        @if (!string.IsNullOrWhiteSpace(role.Start) && !string.IsNullOrWhiteSpace(role.End))
+                <div class="timeline-card__role-header">
+                    <div class="timeline-card__role-header-main">
+                        <h3 class="timeline-card__role-title">@role.Title</h3>
+                        @if (!string.IsNullOrWhiteSpace(role.Start) || !string.IsNullOrWhiteSpace(role.End))
                         {
-                            <span>–</span>
+                            <p class="timeline-card__role-period">
+                                @(string.IsNullOrWhiteSpace(role.Start) ? string.Empty : role.Start)
+                                @if (!string.IsNullOrWhiteSpace(role.Start) && !string.IsNullOrWhiteSpace(role.End))
+                                {
+                                    <span>–</span>
+                                }
+                                @(string.IsNullOrWhiteSpace(role.End) ? "Present" : role.End)
+                            </p>
                         }
-                        @(string.IsNullOrWhiteSpace(role.End) ? "Present" : role.End)
-                    </p>
-                }
-                @foreach (var project in role.Projects)
-                {
-                    <ProjectCard Project="@project" IsHighlighted="@Highlights.IsProjectHighlighted(project)" />
-                }
+                    </div>
+                    @if (role.Projects.Count > 0)
+                    {
+                        <button type="button"
+                                class="card-expand-toggle no-print"
+                                aria-expanded="@roleExpanded.ToString().ToLowerInvariant()"
+                                @onclick="() => ToggleRole(roleKey)">
+                            <span class="card-expand-toggle__label">@(roleExpanded ? "Collapse" : "Expand / Deep Dive")</span>
+                            <span class="card-expand-toggle__icon" aria-hidden="true">@(roleExpanded ? "−" : "+")</span>
+                        </button>
+                    }
+                </div>
+                <div class="projects-section @(roleExpanded ? string.Empty : "projects-section--collapsed")">
+                    @foreach (var project in role.Projects)
+                    {
+                        <ProjectCard Project="@project" IsHighlighted="@Highlights.IsProjectHighlighted(project)" />
+                    }
+                </div>
             </div>
         }
     </div>
 </div>
 
 @code {
+    private Dictionary<string, bool> _roleExpanded = new();
+
     [Parameter, EditorRequired]
     public TimelineEntry Entry { get; set; } = default!;
 
     [Parameter]
     public HighlightMap Highlights { get; set; } = HighlightMap.Empty;
+
+    private void ToggleRole(string roleKey)
+    {
+        var current = _roleExpanded.GetValueOrDefault(roleKey, true);
+        _roleExpanded[roleKey] = !current;
+    }
 }

@@ -1,12 +1,68 @@
 .experience-shell {
     display: grid;
+    gap: 2rem;
 }
 
 .experience-shell__status {
     margin: 0;
     padding: 1rem 1.25rem;
     border-radius: 0.75rem;
-    background: rgba(255, 255, 255, 0.9);
-    color: #0f172a;
-    box-shadow: 0 0.75rem 1.5rem rgba(15, 23, 42, 0.08);
+    background: var(--color-card-bg);
+    color: var(--color-text);
+    border: 1px solid var(--color-card-border);
+}
+
+/* ===== Timeline Rail ===== */
+.timeline-feed {
+    position: relative;
+    display: grid;
+    gap: 1.5rem;
+    padding-left: 1.5rem;
+}
+
+.timeline-feed::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.75rem;
+    bottom: 0.75rem;
+    width: 4px;
+    background: var(--color-timeline-rail);
+    border-radius: 2px;
+}
+
+/* Timeline card node indicator */
+.timeline-card {
+    position: relative;
+}
+
+.timeline-card::before {
+    content: '';
+    position: absolute;
+    left: -1.875rem;
+    top: 1.25rem;
+    width: 0.875rem;
+    height: 0.875rem;
+    border-radius: 50%;
+    background: var(--color-card-bg);
+    border: 3px solid var(--color-timeline-rail);
+    z-index: 1;
+}
+
+.timeline-card.is-highlighted::before {
+    border-color: var(--color-link);
+    background: var(--color-link);
+}
+
+/* ===== Projects Section ===== */
+.projects-section {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+    .projects-section {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }

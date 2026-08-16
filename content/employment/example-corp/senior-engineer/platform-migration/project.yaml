@@ -1,4 +1,5 @@
 name: Platform Migration
+briefSummary: Migrated legacy monolith to containerised .NET microservices on Azure Kubernetes Service, cutting deployment cycle time by 60%.
 skills:
   - .NET
   - Docker

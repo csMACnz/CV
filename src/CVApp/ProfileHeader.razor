@@ -1,3 +1,5 @@
+@inject IJSRuntime JS
+
 <section class="profile-header">
     <div class="profile-header__content">
         <p class="profile-header__eyebrow">Experience</p>
@@ -5,14 +7,17 @@
         <p class="profile-header__title">@Data.Title</p>
         <p class="profile-header__bio">@Data.Bio</p>
 
-        @if (PrintRequested.HasDelegate)
-        {
-            <div class="profile-header__actions no-print">
+        <div class="profile-header__actions no-print">
+            @if (PrintRequested.HasDelegate)
+            {
                 <button type="button" class="profile-header__print-button" @onclick="PrintRequested">
                     Print / Save PDF
                 </button>
-            </div>
-        }
+            }
+        </div>
+        <button type="button" class="profile-header__theme-toggle theme-toggle no-print" @onclick="ToggleTheme" aria-label="@(_isDark ? "Switch to light mode" : "Switch to dark mode")">
+            @(_isDark ? "☀ Light" : "☾ Dark")
+        </button>
 
         <div class="profile-header__meta">
             <p class="profile-header__location">@Data.Location</p>
@@ -36,6 +41,7 @@
 
 @code {
     private List<ProfileLinkViewModel> _safeLinks = [];
+    private bool _isDark;
 
     [Parameter, EditorRequired]
     public Profile Data { get; set; } = default!;
@@ -50,6 +56,12 @@
             .Where(link => link is not null)
             .Cast<ProfileLinkViewModel>()
             .ToList();
+    }
+
+    private async Task ToggleTheme()
+    {
+        _isDark = !_isDark;
+        await JS.InvokeVoidAsync("cvApp.setTheme", _isDark ? "dark" : "light");
     }
 
     private static ProfileLinkViewModel? CreateSafeLink(ContactLink link)

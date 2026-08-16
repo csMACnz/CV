@@ -1,0 +1,6 @@
+name: Legacy API Rebuild
+briefSummary: Rewrote ageing SOAP endpoints as RESTful JSON APIs, improving third-party integration speed by 40%.
+skills:
+  - C#
+  - REST
+  - SQL Server
