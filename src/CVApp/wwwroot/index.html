@@ -45,7 +45,7 @@
                 </div>
             </div>
 
-            <h1 class="wf-title">CSMacNz</h1>
+            <p class="wf-title">CSMacNz</p>
             <p class="wf-subtitle">Senior Software Engineer Portfolio</p>
 
             <div class="wf-progress-track">
@@ -59,7 +59,7 @@
 
             <div class="wf-region">
                 <span class="wf-region-dot"></span>
-                Aotearoa New Zealand &bull; .NET &bull; Blazor
+                Aotearoa New Zealand &#8226; .NET &#8226; Blazor
             </div>
         </div>
     </div>
@@ -109,7 +109,9 @@
             function setProgress(pct, label) {
                 pct = Math.max(0, Math.min(100, pct));
                 if (bar) bar.style.width = pct + '%';
-                if (label && stepText) stepText.textContent = label;
+                if (label) {
+                    if (stepText) stepText.textContent = label;
+                }
             }
 
             var loadedCount = 0;
@@ -144,15 +146,17 @@
 
             // Use MutationObserver on #app — the real "ready" signal is Blazor's
             // first render, not just boot resolution.
-            if (appRoot && 'MutationObserver' in window) {
-                var observer = new MutationObserver(function () {
-                    if (appRoot.childElementCount > 0) {
-                        observer.disconnect();
-                        setProgress(100, 'Ready');
-                        finishLoading();
-                    }
-                });
-                observer.observe(appRoot, { childList: true });
+            if (appRoot) {
+                if ('MutationObserver' in window) {
+                    var observer = new MutationObserver(function () {
+                        if (appRoot.childElementCount !== 0) {
+                            observer.disconnect();
+                            setProgress(100, 'Ready');
+                            finishLoading();
+                        }
+                    });
+                    observer.observe(appRoot, { childList: true });
+                }
             }
 
             Blazor.start({
