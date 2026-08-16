@@ -1,14 +1,2 @@
-@code {
-#if DEBUG
-    // ADR-004 / ADR-011: Admin navigation link — compiled and rendered only in Debug builds.
-    // Using RenderFragment ensures the "Admin" string literal is absent from Release assemblies.
-    private readonly RenderFragment _adminLink =
-        @<div class="nav-item px-3">
-            <NavLink class="nav-link" href="admin">
-                Admin
-            </NavLink>
-        </div>;
-#else
-    private static readonly RenderFragment? _adminLink = null;
-#endif
-}
+@* SPA layout: no persistent navigation bar per ADR-012 *@
+@* Admin-only debug link available via direct URL navigation *@
