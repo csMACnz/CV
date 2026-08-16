@@ -26,6 +26,58 @@ public class ReleaseSmokeTests
         await AssertPublishedSiteRendersAsync("/CV/preview/pr-42/");
     }
 
+    [Fact]
+    public async Task ReleasePublishArtifacts_PrintConfigModalActionsReachableOnMobileViewport()
+    {
+        const string baseHref = "/CV/";
+
+        using var publish = await RunDotnetPublishReleaseAsync(baseHref);
+        Assert.True(publish.Succeeded,
+            $"Release publish failed (exit code {publish.ExitCode}).\nOutput:\n{publish.Output}\nError:\n{publish.Error}");
+
+        var routePrefix = baseHref.TrimEnd('/');
+        var publishWwwroot = Path.Combine(publish.OutputDirectory, "wwwroot");
+        await using var harness = await CvStaticHarness.StartAsync(publishWwwroot, routePrefix);
+
+        using var playwright = await Playwright.CreateAsync();
+        await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+        {
+            Headless = true
+        });
+
+        var page = await browser.NewPageAsync(new BrowserNewPageOptions
+        {
+            ViewportSize = new ViewportSize
+            {
+                Width = 390,
+                Height = 640
+            }
+        });
+
+        await page.GotoAsync($"{harness.BaseUrl}{baseHref}", new PageGotoOptions
+        {
+            WaitUntil = WaitUntilState.NetworkIdle
+        });
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Print / Save PDF" }).ClickAsync();
+        var content = page.Locator(".print-config-modal__content");
+        await content.WaitForAsync(new LocatorWaitForOptions
+        {
+            State = WaitForSelectorState.Visible
+        });
+
+        await content.EvaluateAsync("el => el.scrollTop = el.scrollHeight");
+
+        var generateButton = page.GetByRole(AriaRole.Button, new() { Name = "Generate / Print" });
+        await generateButton.WaitForAsync(new LocatorWaitForOptions
+        {
+            State = WaitForSelectorState.Visible
+        });
+
+        Assert.True(await IsFullyWithinViewportAsync(generateButton),
+            "Expected the print modal action buttons to be reachable on mobile after scrolling the modal content.");
+    }
+
     private static async Task AssertPublishedSiteRendersAsync(string baseHref)
     {
         using var publish = await RunDotnetPublishReleaseAsync(baseHref);
@@ -136,6 +188,10 @@ public class ReleaseSmokeTests
         var actualText = (await locator.TextContentAsync())?.Trim();
         Assert.Equal(expectedText, actualText);
     }
+
+    private static Task<bool> IsFullyWithinViewportAsync(ILocator locator)
+        => locator.EvaluateAsync<bool>(
+            "el => { const r = el.getBoundingClientRect(); return r.top >= 0 && r.bottom <= window.innerHeight; }");
 
     private static async Task<BuildResult> RunDotnetPublishReleaseAsync(string baseHref = "/CV/")
     {

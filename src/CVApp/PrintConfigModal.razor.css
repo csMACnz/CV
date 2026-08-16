@@ -74,7 +74,8 @@
 @media (max-width: 767px) {
     .print-config-modal {
         width: 100%;
-        min-height: 100%;
+        height: 100dvh;
+        min-height: 0;
         border-radius: 0;
         display: flex;
         flex-direction: column;
@@ -83,10 +84,13 @@
     .modal-backdrop {
         padding: 0;
         align-items: stretch;
+        overflow-y: auto;
     }
 
     .print-config-modal__content {
         flex: 1;
+        min-height: 0;
+        overflow-y: auto;
     }
 }
 
