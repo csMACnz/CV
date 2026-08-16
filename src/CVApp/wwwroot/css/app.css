@@ -102,38 +102,251 @@ a, .btn-link {
         content: "An error has occurred."
     }
 
-.loading-progress {
-    position: relative;
-    display: block;
-    width: 8rem;
-    height: 8rem;
-    margin: 20vh auto 1rem auto;
+/* ===== Loading overlay ===== */
+
+#wf-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: var(--color-bg);
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
 }
 
-    .loading-progress circle {
-        fill: none;
-        stroke: #e0e0e0;
-        stroke-width: 0.6rem;
-        transform-origin: 50% 50%;
-        transform: rotate(-90deg);
-    }
+#wf-loader.wf-loader--hidden {
+    opacity: 0;
+    transform: scale(0.98);
+    pointer-events: none;
+}
 
-        .loading-progress circle:last-child {
-            stroke: #0976F3;
-            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
-            transition: stroke-dasharray 0.05s ease-in-out;
-        }
-
-.loading-progress-text {
-    position: absolute;
+.wf-loader-inner {
+    width: 100%;
+    max-width: 28rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
-    font-weight: bold;
-    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+    position: relative;
 }
 
-    .loading-progress-text:after {
-        content: var(--blazor-load-percentage-text, "Loading");
+/* Splatter background accents */
+.wf-splatter {
+    position: absolute;
+    pointer-events: none;
+}
+
+.wf-splatter--blue {
+    top: -6rem;
+    left: -4rem;
+    width: 11rem;
+    height: 11rem;
+    color: #4097F3;
+    opacity: 0.3;
+    animation: wf-pulse-splatter 4s ease-in-out infinite;
+}
+
+.wf-splatter--mustard {
+    bottom: -5rem;
+    right: -4rem;
+    width: 12rem;
+    height: 12rem;
+    color: #FFB400;
+    opacity: 0.35;
+    animation: wf-float-splash 3.5s ease-in-out infinite;
+}
+
+/* Logo */
+.wf-logo-wrap {
+    margin-bottom: 1.5rem;
+    animation: wf-logo-glow 3s ease-in-out infinite;
+}
+
+.wf-logo {
+    width: 6rem;
+    height: 6rem;
+    background: #1F1F1F;
+    border-radius: 1rem;
+    padding: 0.875rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.wf-logo-text {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+    color: #fff;
+    line-height: 1;
+    z-index: 1;
+}
+
+    .wf-logo-text .wf-slash {
+        color: #FFB400;
+        margin-left: 1px;
     }
+
+    .wf-logo-text .wf-nz {
+        color: #FFB400;
+        font-size: 1.15rem;
+        letter-spacing: 0.05em;
+        display: block;
+        margin-top: 2px;
+    }
+
+.wf-logo-dots {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1;
+}
+
+.wf-dot {
+    border-radius: 999px;
+}
+
+.wf-dot--blue {
+    width: 8px;
+    height: 8px;
+    background: #4097F3;
+}
+
+.wf-dot--mustard {
+    width: 6px;
+    height: 6px;
+    background: #FFB400;
+}
+
+.wf-dot--orange {
+    width: 8px;
+    height: 8px;
+    background: #EF6A20;
+}
+
+/* Heading */
+.wf-title {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 0.25rem;
+}
+
+.wf-subtitle {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-muted);
+    margin: 0 0 2rem;
+    max-width: 22rem;
+}
+
+/* Progress bar */
+.wf-progress-track {
+    width: 100%;
+    max-width: 18rem;
+    height: 0.625rem;
+    background: var(--color-card-border);
+    border-radius: 999px;
+    padding: 2px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
+    margin-bottom: 1rem;
+}
+
+.wf-progress-bar {
+    height: 100%;
+    border-radius: 999px;
+    width: 6%;
+    background: linear-gradient(90deg, #4097F3 0%, #FFB400 50%, #EF6A20 100%);
+    background-size: 200% 100%;
+    animation: wf-shimmer 2s linear infinite;
+    transition: width 0.25s ease-out;
+}
+
+/* Status ticker */
+.wf-step {
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 0.75rem;
+    color: var(--color-muted);
+}
+
+.wf-spinner {
+    width: 0.875rem;
+    height: 0.875rem;
+    border-radius: 999px;
+    border: 2px solid transparent;
+    border-top-color: #4097F3;
+    border-right-color: #4097F3;
+    animation: wf-spin 0.9s linear infinite;
+    flex-shrink: 0;
+}
+
+.wf-region {
+    margin-top: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 0.6875rem;
+    color: var(--color-muted);
+}
+
+.wf-region-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: #10b981;
+}
+
+/* Keyframes */
+@keyframes wf-pulse-splatter {
+    0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.85; }
+    50% { transform: scale(1.12) rotate(4deg); opacity: 1; }
+}
+
+@keyframes wf-float-splash {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(-3deg); }
+}
+
+@keyframes wf-logo-glow {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(64, 151, 243, 0.3)); }
+    50% { filter: drop-shadow(0 0 16px rgba(255, 180, 0, 0.5)); }
+}
+
+@keyframes wf-shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+@keyframes wf-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wf-splatter,
+    .wf-logo-wrap,
+    .wf-progress-bar,
+    .wf-spinner {
+        animation: none !important;
+    }
+}
 
 code {
     color: #c02d76;
