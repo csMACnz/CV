@@ -49,3 +49,13 @@
     font-size: 0.78rem;
     font-weight: 500;
 }
+
+.project-card__narrative--collapsed {
+    display: none;
+}
+
+@media print {
+    .project-card__narrative--collapsed {
+        display: block !important;
+    }
+}

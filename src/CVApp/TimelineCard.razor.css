@@ -54,3 +54,13 @@
     font-size: 0.875rem;
     color: var(--color-muted);
 }
+
+.timeline-card__roles--collapsed {
+    display: none;
+}
+
+@media print {
+    .timeline-card__roles--collapsed {
+        display: block !important;
+    }
+}

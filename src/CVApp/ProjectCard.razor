@@ -14,9 +14,9 @@
             </button>
         }
     </div>
-    @if (_expanded && !string.IsNullOrWhiteSpace(Project.Narrative))
+    @if (!string.IsNullOrWhiteSpace(Project.Narrative))
     {
-        <p class="project-card__narrative">@Project.Narrative</p>
+        <p class="project-card__narrative @(_expanded ? string.Empty : "project-card__narrative--collapsed")">@Project.Narrative</p>
     }
     @if (Project.Skills.Count > 0)
     {

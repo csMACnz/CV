@@ -21,34 +21,31 @@
             <span class="card-expand-toggle__icon" aria-hidden="true">@(_expanded ? "−" : "+")</span>
         </button>
     </div>
-    @if (_expanded)
-    {
-        <div class="timeline-card__roles">
-            @foreach (var role in Entry.Roles)
-            {
-                <div class="timeline-card__role @(Highlights.IsActive && !Highlights.IsRoleHighlighted(role) ? "timeline-card__role--dimmed" : string.Empty) @(Highlights.IsRoleHighlighted(role) ? "is-highlighted" : string.Empty)">
-                    <h3 class="timeline-card__role-title">@role.Title</h3>
-                    @if (!string.IsNullOrWhiteSpace(role.Start) || !string.IsNullOrWhiteSpace(role.End))
-                    {
-                        <p class="timeline-card__role-period">
-                            @(string.IsNullOrWhiteSpace(role.Start) ? string.Empty : role.Start)
-                            @if (!string.IsNullOrWhiteSpace(role.Start) && !string.IsNullOrWhiteSpace(role.End))
-                            {
-                                <span>–</span>
-                            }
-                            @(string.IsNullOrWhiteSpace(role.End) ? "Present" : role.End)
-                        </p>
-                    }
-                    <div class="projects-section">
-                        @foreach (var project in role.Projects)
+    <div class="timeline-card__roles @(_expanded ? string.Empty : "timeline-card__roles--collapsed")">
+        @foreach (var role in Entry.Roles)
+        {
+            <div class="timeline-card__role @(Highlights.IsActive && !Highlights.IsRoleHighlighted(role) ? "timeline-card__role--dimmed" : string.Empty) @(Highlights.IsRoleHighlighted(role) ? "is-highlighted" : string.Empty)">
+                <h3 class="timeline-card__role-title">@role.Title</h3>
+                @if (!string.IsNullOrWhiteSpace(role.Start) || !string.IsNullOrWhiteSpace(role.End))
+                {
+                    <p class="timeline-card__role-period">
+                        @(string.IsNullOrWhiteSpace(role.Start) ? string.Empty : role.Start)
+                        @if (!string.IsNullOrWhiteSpace(role.Start) && !string.IsNullOrWhiteSpace(role.End))
                         {
-                            <ProjectCard Project="@project" IsHighlighted="@Highlights.IsProjectHighlighted(project)" />
+                            <span>–</span>
                         }
-                    </div>
+                        @(string.IsNullOrWhiteSpace(role.End) ? "Present" : role.End)
+                    </p>
+                }
+                <div class="projects-section">
+                    @foreach (var project in role.Projects)
+                    {
+                        <ProjectCard Project="@project" IsHighlighted="@Highlights.IsProjectHighlighted(project)" />
+                    }
                 </div>
-            }
-        </div>
-    }
+            </div>
+        }
+    </div>
 </div>
 
 @code {

@@ -71,6 +71,25 @@
     font-weight: 600;
 }
 
+@media (max-width: 767px) {
+    .print-config-modal {
+        width: 100%;
+        min-height: 100%;
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-backdrop {
+        padding: 0;
+        align-items: stretch;
+    }
+
+    .print-config-modal__content {
+        flex: 1;
+    }
+}
+
 .print-config-modal__button--primary {
     border-color: #1d4ed8;
     background: #1d4ed8;
