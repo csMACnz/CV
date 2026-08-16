@@ -186,7 +186,7 @@ public class ReleaseSmokeTests
 
     private static Task<bool> IsFullyWithinViewportAsync(ILocator locator)
         => locator.EvaluateAsync<bool>(
-            "el => { const r = el.getBoundingClientRect(); return r.top >= 0 && r.bottom <= window.innerHeight; }");
+            "el => { const r = el.getBoundingClientRect(); return r.top >= 0 && r.bottom <= window.innerHeight && r.left >= 0 && r.right <= window.innerWidth; }");
 
     private static async Task<BuildResult> RunDotnetPublishReleaseAsync(string baseHref = "/CV/")
     {
