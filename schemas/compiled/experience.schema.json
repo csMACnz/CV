@@ -4,7 +4,10 @@
   "title": "Compiled Experience Payload",
   "type": "object",
   "additionalProperties": false,
-  "required": ["profile", "timeline"],
+  "required": [
+    "profile",
+    "timeline"
+  ],
   "properties": {
     "profile": {
       "$ref": "#/definitions/profile"
@@ -20,7 +23,10 @@
     "timelineEntry": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["company", "roles"],
+      "required": [
+        "company",
+        "roles"
+      ],
       "properties": {
         "company": {
           "type": "string",
@@ -45,7 +51,10 @@
     "role": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["title", "projects"],
+      "required": [
+        "title",
+        "projects"
+      ],
       "properties": {
         "title": {
           "type": "string",
@@ -70,9 +79,17 @@
     "project": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "skills", "narrative"],
+      "required": [
+        "name",
+        "skills",
+        "narrative"
+      ],
       "properties": {
         "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "briefSummary": {
           "type": "string",
           "minLength": 1
         },
@@ -91,7 +108,13 @@
     "profile": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "title", "bio", "location", "links"],
+      "required": [
+        "name",
+        "title",
+        "bio",
+        "location",
+        "links"
+      ],
       "properties": {
         "name": {
           "type": "string",
@@ -120,7 +143,11 @@
     "contactLink": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["label", "url", "iconKey"],
+      "required": [
+        "label",
+        "url",
+        "iconKey"
+      ],
       "properties": {
         "label": {
           "type": "string",
