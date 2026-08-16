@@ -1,0 +1,166 @@
+{
+  "profile": {
+    "name": "Casey Mac",
+    "title": "Senior Software Engineer",
+    "bio": "Builds resilient .NET platforms, developer tooling, and polished portfolio experiences for technical audiences.",
+    "location": "Aotearoa New Zealand",
+    "links": [
+      {
+        "label": "Email",
+        "url": "mailto:casey@example.com",
+        "iconKey": "email"
+      },
+      {
+        "label": "GitHub",
+        "url": "https://github.com/csmacnz",
+        "iconKey": "github"
+      },
+      {
+        "label": "Website",
+        "url": "https://csmac.nz",
+        "iconKey": "link"
+      }
+    ]
+  },
+  "timeline": [
+    {
+      "company": "Acme Dynamics",
+      "period": "2016\u20132018",
+      "location": "Wellington, NZ",
+      "roles": [
+        {
+          "title": "Junior Developer",
+          "start": "2016-03",
+          "end": "2017-06",
+          "projects": [
+            {
+              "name": "Legacy API Rebuild",
+              "skills": [
+                "C#",
+                "REST",
+                "SQL Server"
+              ],
+              "narrative": "Rewrote a collection of ageing SOAP-based internal APIs as lightweight RESTful JSON services using ASP.NET Core.\nCollaborated with senior engineers to define contracts, wrote integration tests, and documented endpoints in OpenAPI.\nThird-party partners reported a 40% reduction in integration effort after the rollout.",
+              "briefSummary": "Rewrote ageing SOAP endpoints as RESTful JSON APIs, improving third-party integration speed by 40%."
+            }
+          ]
+        },
+        {
+          "title": "Mid-Level Developer",
+          "start": "2017-07",
+          "end": "2018-08",
+          "projects": [
+            {
+              "name": "CI/CD Pipeline Overhaul",
+              "skills": [
+                "Jenkins",
+                "Docker",
+                "Bash",
+                "PowerShell"
+              ],
+              "narrative": "Designed and implemented a Jenkins-based CI/CD pipeline that replaced a fragile manual release process relying on shared network drives and tribal knowledge.\nContainerised build agents using Docker to eliminate \u0022works on my machine\u0022 failures, and authored runbooks covering rollback procedures.\nRelease cadence improved from once a fortnight to multiple times per week, and mean time to recovery dropped by 70%.",
+              "briefSummary": "Replaced a fragile manual release process with an automated CI/CD pipeline, cutting release time from days to under an hour."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "company": "Blueprint Studios",
+      "period": "2018\u20132020",
+      "location": "Auckland, NZ",
+      "roles": [
+        {
+          "title": "Software Engineer",
+          "start": "2018-09",
+          "end": "2020-05",
+          "projects": [
+            {
+              "name": "Client Self-Service Portal",
+              "skills": [
+                "React",
+                "TypeScript",
+                ".NET Core",
+                "PostgreSQL"
+              ],
+              "narrative": "Designed and delivered a customer-facing self-service portal in React and TypeScript backed by a .NET Core API and PostgreSQL database.\nThe portal allowed clients to manage subscriptions, download invoices, and raise support requests without phoning the helpdesk.\nWithin three months of launch, inbound support ticket volume dropped by 35% and customer satisfaction scores improved measurably.",
+              "briefSummary": "Built a React and .NET Core customer portal that reduced support ticket volume by 35%."
+            },
+            {
+              "name": "Reporting Engine",
+              "skills": [
+                ".NET Core",
+                "SSRS",
+                "SQL Server",
+                "Azure Blob Storage"
+              ],
+              "narrative": "Designed a centralised reporting engine that replaced a patchwork of ad-hoc SQL scripts and manual Excel exports scattered across the business.\nReports were defined as composable query templates, rendered server-side, and cached in Azure Blob Storage for repeat consumers.\nEnd-user report generation time fell from several minutes to under five seconds for the most commonly requested dashboards.",
+              "briefSummary": "Replaced slow ad-hoc SQL queries with a centralised reporting service, reducing report generation time from minutes to seconds."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "company": "Example Corp",
+      "period": "2020\u20132023",
+      "location": "Remote",
+      "roles": [
+        {
+          "title": "Senior Software Engineer",
+          "start": "2020-06",
+          "end": "2023-09",
+          "projects": [
+            {
+              "name": "Platform Migration",
+              "skills": [
+                ".NET",
+                "Docker",
+                "Azure"
+              ],
+              "narrative": "Led a full migration of the legacy monolith to a containerised .NET microservices platform running on Azure Kubernetes Service.\nReduced deployment cycle time by 60% and eliminated environment parity issues across staging and production.",
+              "briefSummary": "Migrated legacy monolith to containerised .NET microservices on Azure Kubernetes Service, cutting deployment cycle time by 60%."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "company": "Futuretek Group",
+      "period": "2023\u2013Present",
+      "location": "Remote",
+      "roles": [
+        {
+          "title": "Lead Software Engineer",
+          "start": "2023-10",
+          "projects": [
+            {
+              "name": "AI Feature Pipeline",
+              "skills": [
+                "Python",
+                "Azure OpenAI",
+                ".NET",
+                "Redis",
+                "Kubernetes"
+              ],
+              "narrative": "Architected and delivered an event-driven pipeline that uses Azure OpenAI to classify, tag, and enrich incoming content records at scale.\nThe pipeline processes thousands of items per hour across Kubernetes-hosted workers, with Redis used for deduplication and rate-limit buffering.\nReplaced manual analyst review workflows, freeing a team of three analysts to focus on edge-case handling and quality audits rather than routine throughput.\nLatency SLA for enrichment dropped from 24 hours to under 90 seconds end-to-end.",
+              "briefSummary": "Built an LLM-powered content enrichment pipeline that automated classification tasks previously handled by a team of three analysts."
+            },
+            {
+              "name": "Internal Developer Platform",
+              "skills": [
+                "Terraform",
+                "GitHub Actions",
+                ".NET",
+                "Azure",
+                "Backstage"
+              ],
+              "narrative": "Led the technical design and rollout of an internal developer platform built on Backstage, Terraform, and GitHub Actions.\nThe platform provides golden-path templates for new services, automated environment provisioning, and a unified software catalogue.\nOnboarding a new microservice \u2014 including repository setup, CI/CD pipelines, secrets management, and cloud infrastructure \u2014 now takes less than one working day, down from two weeks of manual steps.\nAdoption reached 80% of all active engineering squads within six months of general availability.",
+              "briefSummary": "Led the design of an internal platform that cut new-service bootstrapping time from two weeks to under a day."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
