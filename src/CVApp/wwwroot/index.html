@@ -161,7 +161,7 @@
                         if (type === 'dotnetjs') {
                             return defaultUri;
                         }
-                        var fetchPromise = fetch(defaultUri, { cache: 'no-cache', integrity: integrity });
+                        var fetchPromise = fetch(defaultUri, { integrity: integrity });
                         trackResource(fetchPromise);
                         return fetchPromise;
                     }

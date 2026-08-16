@@ -145,7 +145,6 @@ a, .btn-link {
     width: 11rem;
     height: 11rem;
     color: #4097F3;
-    opacity: 0.3;
     animation: wf-pulse-splatter 4s ease-in-out infinite;
 }
 
@@ -155,7 +154,6 @@ a, .btn-link {
     width: 12rem;
     height: 12rem;
     color: #FFB400;
-    opacity: 0.35;
     animation: wf-float-splash 3.5s ease-in-out infinite;
 }
 
@@ -315,13 +313,13 @@ a, .btn-link {
 
 /* Keyframes */
 @keyframes wf-pulse-splatter {
-    0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.85; }
-    50% { transform: scale(1.12) rotate(4deg); opacity: 1; }
+    0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.3; }
+    50% { transform: scale(1.12) rotate(4deg); opacity: 0.5; }
 }
 
 @keyframes wf-float-splash {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-8px) rotate(-3deg); }
+    0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.35; }
+    50% { transform: translateY(-8px) rotate(-3deg); opacity: 0.55; }
 }
 
 @keyframes wf-logo-glow {
