@@ -1,0 +1,51 @@
+.project-card {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-card-border);
+    border-radius: 0.5rem;
+    padding: 1rem 1.25rem;
+    display: grid;
+    gap: 0.75rem;
+}
+
+.project-card__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.project-card__name {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    flex: 1;
+    min-width: 0;
+}
+
+.project-card__narrative {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--color-text);
+}
+
+.project-card__skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.project-card__skill-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--color-skill-pill-border);
+    border-radius: 999px;
+    background: var(--color-skill-pill-bg);
+    color: var(--color-skill-pill-text);
+    font-size: 0.78rem;
+    font-weight: 500;
+}

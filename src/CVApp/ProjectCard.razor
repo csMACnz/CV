@@ -1,8 +1,20 @@
 @using CVApp.Services
 
 <div class="project-card @(IsHighlighted ? "is-highlighted" : string.Empty)">
-    <h4 class="project-card__name">@Project.Name</h4>
-    @if (!string.IsNullOrWhiteSpace(Project.Narrative))
+    <div class="project-card__header">
+        <h4 class="project-card__name">@Project.Name</h4>
+        @if (!string.IsNullOrWhiteSpace(Project.Narrative))
+        {
+            <button type="button"
+                    class="card-expand-toggle no-print"
+                    aria-expanded="@_expanded.ToString().ToLowerInvariant()"
+                    @onclick="ToggleExpand">
+                <span class="card-expand-toggle__label">@(_expanded ? "Collapse" : "Expand / Deep Dive")</span>
+                <span class="card-expand-toggle__icon" aria-hidden="true">@(_expanded ? "−" : "+")</span>
+            </button>
+        }
+    </div>
+    @if (_expanded && !string.IsNullOrWhiteSpace(Project.Narrative))
     {
         <p class="project-card__narrative">@Project.Narrative</p>
     }
@@ -18,9 +30,16 @@
 </div>
 
 @code {
+    private bool _expanded = true;
+
     [Parameter, EditorRequired]
     public Project Project { get; set; } = default!;
 
     [Parameter]
     public bool IsHighlighted { get; set; }
+
+    private void ToggleExpand()
+    {
+        _expanded = !_expanded;
+    }
 }
