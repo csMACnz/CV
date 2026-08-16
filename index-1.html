@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSMacNz</title>
+    <base href="/" />
+
+    <!--
+      No external CDN dependencies on purpose (Tailwind CDN + Google Fonts were
+      dropped). A loading screen that itself depends on slow/unavailable
+      third-party requests defeats its own purpose, and Tailwind's own docs
+      say the CDN build isn't meant for production. Everything below is
+      plain, inlined CSS so this paints instantly regardless of network
+      conditions.
+
+      If you want pixel-exact Inter / Space Grotesk, self-host the woff2
+      files under wwwroot/fonts/ and fill in the @font-face src urls below.
+      Until then this falls back to the system font stack, which still
+      reads clean.
+    -->
+    <style>
+        :root {
+            --wf-dark: #121212;
+            --wf-slate: #1F1F1F;
+            --wf-light-bg: #FAFAFA;
+            --wf-blue: #4097F3;
+            --wf-mustard: #FFB400;
+            --wf-orange: #EF6A20;
+            --wf-bg: var(--wf-light-bg);
+            --wf-fg: #1e293b;
+            --wf-muted: #64748b;
+            --wf-track: #e2e8f0;
+        }
+
+        html.dark {
+            --wf-bg: var(--wf-dark);
+            --wf-fg: #f1f5f9;
+            --wf-muted: #94a3b8;
+            --wf-track: #334155;
+        }
+
+        /* Uncomment once you've self-hosted the font files:
+        @font-face {
+            font-family: 'Space Grotesk';
+            src: url('/fonts/space-grotesk-600.woff2') format('woff2');
+            font-weight: 600;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Inter';
+            src: url('/fonts/inter-400.woff2') format('woff2');
+            font-weight: 400;
+            font-display: swap;
+        }
+        */
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: var(--wf-bg);
+            color: var(--wf-fg);
+            font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+        }
+
+        #app {
+            min-height: 100vh;
+        }
+
+        /* ============ Loading overlay ============ */
+
+        #wf-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 40;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            background: var(--wf-bg);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        }
+
+        #wf-loader.wf-loader--hidden {
+            opacity: 0;
+            transform: scale(0.98);
+            pointer-events: none;
+        }
+
+        .wf-loader-inner {
+            width: 100%;
+            max-width: 28rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        /* Splatter background accents */
+        .wf-splatter {
+            position: absolute;
+            pointer-events: none;
+        }
+        .wf-splatter--blue {
+            top: -6rem; left: -4rem;
+            width: 11rem; height: 11rem;
+            color: var(--wf-blue);
+            opacity: 0.3;
+            animation: wf-pulse-splatter 4s ease-in-out infinite;
+        }
+        .wf-splatter--mustard {
+            bottom: -5rem; right: -4rem;
+            width: 12rem; height: 12rem;
+            color: var(--wf-mustard);
+            opacity: 0.35;
+            animation: wf-float-splash 3.5s ease-in-out infinite;
+        }
+
+        /* Logo */
+        .wf-logo-wrap {
+            margin-bottom: 1.5rem;
+            animation: wf-logo-glow 3s ease-in-out infinite;
+        }
+        .wf-logo {
+            width: 6rem;
+            height: 6rem;
+            background: var(--wf-slate);
+            border-radius: 1rem;
+            padding: 0.875rem;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+            border: 1px solid rgba(51,65,85,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .wf-logo-text {
+            font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: -0.02em;
+            color: #fff;
+            line-height: 1;
+            z-index: 1;
+        }
+        .wf-logo-text .wf-slash { color: var(--wf-mustard); margin-left: 1px; }
+        .wf-logo-text .wf-nz { color: var(--wf-mustard); font-size: 1.15rem; letter-spacing: 0.05em; display: block; margin-top: 2px; }
+        .wf-logo-dots {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1;
+        }
+        .wf-dot { border-radius: 999px; }
+        .wf-dot--blue { width: 8px; height: 8px; background: var(--wf-blue); }
+        .wf-dot--mustard { width: 6px; height: 6px; background: var(--wf-mustard); }
+        .wf-dot--orange { width: 8px; height: 8px; background: var(--wf-orange); }
+
+        /* Heading */
+        .wf-title {
+            font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            margin: 0 0 0.25rem;
+        }
+        .wf-subtitle {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--wf-muted);
+            margin: 0 0 2rem;
+            max-width: 22rem;
+        }
+
+        /* Progress bar */
+        .wf-progress-track {
+            width: 100%;
+            max-width: 18rem;
+            height: 0.625rem;
+            background: var(--wf-track);
+            border-radius: 999px;
+            padding: 2px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.15);
+            margin-bottom: 1rem;
+        }
+        .wf-progress-bar {
+            height: 100%;
+            border-radius: 999px;
+            width: 6%;
+            background: linear-gradient(90deg, var(--wf-blue) 0%, var(--wf-mustard) 50%, var(--wf-orange) 100%);
+            background-size: 200% 100%;
+            animation: wf-shimmer 2s linear infinite;
+            transition: width 0.25s ease-out;
+        }
+
+        /* Status ticker */
+        .wf-step {
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+            font-size: 0.75rem;
+            color: var(--wf-muted);
+        }
+        .wf-spinner {
+            width: 0.875rem;
+            height: 0.875rem;
+            border-radius: 999px;
+            border: 2px solid transparent;
+            border-top-color: var(--wf-blue);
+            border-right-color: var(--wf-blue);
+            animation: wf-spin 0.9s linear infinite;
+            flex-shrink: 0;
+        }
+
+        .wf-region {
+            margin-top: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+            font-size: 0.6875rem;
+            color: var(--wf-muted);
+        }
+        .wf-region-dot {
+            width: 6px; height: 6px; border-radius: 999px; background: #10b981;
+        }
+
+        /* ============ Keyframes ============ */
+        @keyframes wf-pulse-splatter {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.85; }
+            50% { transform: scale(1.12) rotate(4deg); opacity: 1; }
+        }
+        @keyframes wf-float-splash {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(-3deg); }
+        }
+        @keyframes wf-logo-glow {
+            0%, 100% { filter: drop-shadow(0 0 8px rgba(64,151,243,0.3)); }
+            50% { filter: drop-shadow(0 0 16px rgba(255,180,0,0.5)); }
+        }
+        @keyframes wf-shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        @keyframes wf-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Respect reduced motion: kill decorative animation, keep the
+           progress bar's width transition since that's informational. */
+        @media (prefers-reduced-motion: reduce) {
+            .wf-splatter, .wf-logo-wrap, .wf-progress-bar, .wf-spinner {
+                animation: none !important;
+            }
+        }
+
+        #blazor-error-ui {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #fff3cd;
+            color: #664d03;
+            padding: 0.75rem 1rem;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+            font-size: 0.875rem;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+            z-index: 50;
+        }
+        #blazor-error-ui .dismiss {
+            cursor: pointer;
+            float: right;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Blazor's root component renders here. Left intentionally near-empty:
+         when Blazor's first render lands, it replaces everything inside
+         this div, which the script below detects to trigger the loader's
+         fade-out. -->
+    <div id="app">
+        <p style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--wf-muted);font-family:ui-sans-serif,system-ui,sans-serif;">
+            Loading…
+        </p>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+
+    <!-- ============ Loading overlay ============ -->
+    <div id="wf-loader">
+        <div class="wf-loader-inner">
+            <div class="wf-splatter wf-splatter--blue" aria-hidden="true">
+                <svg viewBox="0 0 200 200" fill="currentColor"><path d="M45,-62.7C58.3,-52.8,69.1,-39.8,74.5,-24.7C79.8,-9.6,79.7,7.6,74.1,23.3C68.5,39,57.4,53.2,43.2,62.8C29,72.4,11.7,77.4,-4.3,83.3C-20.3,89.2,-35,96,-47.9,88.9C-60.8,81.8,-71.9,60.8,-77.8,40.4C-83.7,20,-84.4,0.2,-78.4,-17.1C-72.4,-34.4,-59.7,-49.2,-44.8,-58.6C-29.9,-68,-15,-72,-0.2,-71.7C14.6,-71.4,29.3,-66.8,45,-62.7Z" transform="translate(100 100)" /></svg>
+            </div>
+            <div class="wf-splatter wf-splatter--mustard" aria-hidden="true">
+                <svg viewBox="0 0 200 200" fill="currentColor"><path d="M38.8,-52.1C50.2,-43.8,59.3,-31.8,64.7,-17.8C70.1,-3.8,71.8,12.2,66.8,26.4C61.8,40.6,50.1,53,36.2,60.4C22.3,67.8,6.2,70.2,-9.5,71.5C-25.2,72.8,-40.5,73,-52.3,64.7C-64.1,56.4,-72.4,39.6,-74.8,22.3C-77.2,5,-73.7,-12.8,-66.2,-28.7C-58.7,-44.6,-47.2,-58.6,-33.4,-65.7C-19.6,-72.8,-3.5,-73,11.3,-69.3C26.1,-65.6,27.4,-60.4,38.8,-52.1Z" transform="translate(100 100)" /></svg>
+            </div>
+
+            <div class="wf-logo-wrap">
+                <div class="wf-logo">
+                    <span class="wf-logo-text">CS<span class="wf-slash">/</span><span class="wf-nz">NZ</span></span>
+                    <div class="wf-logo-dots">
+                        <span class="wf-dot wf-dot--blue"></span>
+                        <span class="wf-dot wf-dot--mustard"></span>
+                        <span class="wf-dot wf-dot--orange"></span>
+                    </div>
+                </div>
+            </div>
+
+            <h1 class="wf-title">CSMacNz</h1>
+            <p class="wf-subtitle">Senior Software Engineer Portfolio</p>
+
+            <div class="wf-progress-track">
+                <div id="wf-progress-bar" class="wf-progress-bar"></div>
+            </div>
+
+            <div class="wf-step">
+                <span class="wf-spinner" aria-hidden="true"></span>
+                <span id="wf-step-text">Preparing platform…</span>
+            </div>
+
+            <div class="wf-region">
+                <span class="wf-region-dot"></span>
+                Aotearoa New Zealand &bull; .NET &bull; Blazor
+            </div>
+        </div>
+    </div>
+
+    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
+    <script>
+        (function () {
+            var loader = document.getElementById('wf-loader');
+            var bar = document.getElementById('wf-progress-bar');
+            var stepText = document.getElementById('wf-step-text');
+            var appRoot = document.getElementById('app');
+
+            var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+            }
+
+            function setProgress(pct, label) {
+                pct = Math.max(0, Math.min(100, pct));
+                if (bar) bar.style.width = pct + '%';
+                if (label && stepText) stepText.textContent = label;
+            }
+
+            // Resource-count-based progress: each boot resource (assemblies,
+            // runtime, satellite data) is tracked as it's requested and as
+            // it finishes. The denominator grows slightly as new requests
+            // come in, but in practice Blazor issues nearly all of them
+            // within the first tick, so this settles quickly and tracks
+            // real download completion rather than a fixed timer.
+            var loadedCount = 0;
+            var resourcesToLoad = [];
+
+            function trackResource(promise) {
+                resourcesToLoad.push(promise);
+                promise.then(function () {
+                    loadedCount += 1;
+                    var total = resourcesToLoad.length;
+                    var pct = 8 + Math.floor((loadedCount / total) * 82); // 8-90%
+                    setProgress(pct, 'Downloading platform…');
+                }).catch(function () {
+                    // Swallow here — Blazor's own boot promise will reject
+                    // and surface the real error below.
+                });
+            }
+
+            function finishLoading() {
+                if (!loader) return;
+                if (prefersReducedMotion) {
+                    loader.remove();
+                    return;
+                }
+                loader.classList.add('wf-loader--hidden');
+                var cleaned = false;
+                function cleanup() {
+                    if (cleaned) return;
+                    cleaned = true;
+                    if (loader.parentNode) loader.remove();
+                }
+                loader.addEventListener('transitionend', cleanup);
+                setTimeout(cleanup, 1200); // fallback in case transitionend never fires
+            }
+
+            // Watch for Blazor's actual first render into #app — that's the
+            // real "ready" signal, not just "boot resolved".
+            if (appRoot && 'MutationObserver' in window) {
+                var observer = new MutationObserver(function () {
+                    if (appRoot.childElementCount > 0) {
+                        observer.disconnect();
+                        setProgress(100, 'Ready');
+                        finishLoading();
+                    }
+                });
+                observer.observe(appRoot, { childList: true });
+            }
+
+            if (typeof Blazor === 'undefined') {
+                setProgress(0, 'Failed to load platform script');
+                return;
+            }
+
+            Blazor.start({
+                webAssembly: {
+                    loadBootResource: function (type, name, defaultUri, integrity) {
+                        if (type === 'dotnetjs') {
+                            return defaultUri; // let the script tag mechanism load this one normally
+                        }
+                        var fetchPromise = fetch(defaultUri, { cache: 'no-cache', integrity: integrity });
+                        trackResource(fetchPromise);
+                        return fetchPromise;
+                    }
+                }
+            }).then(function () {
+                setProgress(92, 'Starting engine…');
+                // If MutationObserver isn't available for some reason, fall
+                // back to hiding the loader here instead of never hiding it.
+                if (!('MutationObserver' in window)) {
+                    setProgress(100, 'Ready');
+                    finishLoading();
+                }
+            }).catch(function (err) {
+                setProgress(100, 'Something went wrong loading the app');
+                console.error('Blazor failed to start', err);
+            });
+        })();
+    </script>
+</body>
+</html>
