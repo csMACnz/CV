@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "CVApp",
   "resources": {
-    "hash": "sha256-eHVZdl4NNwAgA0FMu+wueGoRw+gWCYhPSs3KDf5Kyw4=",
+    "hash": "sha256-Kb1rTvg/g8XTBRyOKJAeavXozFGcNF4JrEZDCP5M3KI=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-JTswf4CBcNmmrTGm6DppxYNII8GVEmbA3iXD3bU1fcA="
     },
@@ -18,8 +18,8 @@
     },
     "coreAssembly": {},
     "assembly": {
-      "Microsoft.AspNetCore.Components.wasm": "sha256-VzvmTCrdoHViOeheUmiYg8w7XmF5BeiN1rzuSqGT5f4=",
-      "Microsoft.AspNetCore.Components.Web.wasm": "sha256-3k8wrHMy6EcwcO6Q6YrfijxeiT+ypN2f2msEeL2U9ik=",
+      "Microsoft.AspNetCore.Components.wasm": "sha256-akQyl98JIYm9UGlr2fIGizpOvFTioDP9gZiIo1fHWmM=",
+      "Microsoft.AspNetCore.Components.Web.wasm": "sha256-y12f2b2xD22RroA65JpD1w1EUKWwQ1ZH8D/iws+WbHg=",
       "Microsoft.AspNetCore.Components.WebAssembly.wasm": "sha256-pA4vg4MPpEzLGtk/OW5ztYVKNUKZS7aS+QaT5uWRSXE=",
       "Microsoft.Extensions.Configuration.wasm": "sha256-od574rRtVVRJj+24jbl8j3GdQFpxlJOpSx+pEMw1Q18=",
       "Microsoft.Extensions.Configuration.Abstractions.wasm": "sha256-XR+WUfg8LtnrwdXFBnV+qO3ROyp6cYCfl1AZajIAheM=",
@@ -56,7 +56,7 @@
       "System.Threading.wasm": "sha256-umeu0Sm9RMnVh+6GP0K2C2DZn7Zi8iU4AgHMc/tejKk=",
       "System.wasm": "sha256-j0ZGZpl3U3v6Y5aQxnvY7OqOdRv9E3uPI4tGitwhjXI=",
       "System.Private.CoreLib.wasm": "sha256-2gCkbvKJgYLtNjrCJk59EuSB9pMWq+cKmRZOT3qTH9g=",
-      "CVApp.wasm": "sha256-iEbObzBiWODVWkVzQU8bKmJ4NAlRUoXkvNh3owpzxdg="
+      "CVApp.wasm": "sha256-3nWccSTjJZ/0Uq0she5LNqJQS64WenSUAA3nHG7Mjco="
     }
   },
   "cacheBootResources": true,
