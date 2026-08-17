@@ -48,6 +48,7 @@
 }
 
 .print-config-modal__field > select {
+    height: 2.75rem;
     min-height: 2.4rem;
     border: 1px solid #cbd5e1;
     border-radius: 0.5rem;
@@ -74,7 +75,8 @@
 @media (max-width: 767px) {
     .print-config-modal {
         width: 100%;
-        min-height: 100%;
+        height: 100dvh;
+        min-height: 0;
         border-radius: 0;
         display: flex;
         flex-direction: column;
@@ -87,6 +89,9 @@
 
     .print-config-modal__content {
         flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        align-content: start;
     }
 }
 
