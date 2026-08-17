@@ -30,6 +30,8 @@ public class ReleaseSmokeTests
     public async Task ReleasePublishArtifacts_PrintConfigModalActionsReachableOnMobileViewport()
     {
         const string baseHref = "/CV/";
+        const double maxFieldHeightPx = 160;
+        const double maxSelectHeightPx = 80;
 
         using var publish = await RunDotnetPublishReleaseAsync(baseHref);
         Assert.True(publish.Succeeded,
@@ -68,9 +70,10 @@ public class ReleaseSmokeTests
 
         var firstField = page.Locator(".print-config-modal__field").First;
         var firstSelect = page.Locator(".print-config-modal__field > select").First;
-        Assert.True(await GetElementHeightAsync(firstField) <= 160,
+        // Keep generous upper bounds while ensuring controls are not stretched to fill the viewport.
+        Assert.True(await GetElementHeightAsync(firstField) <= maxFieldHeightPx,
             "Expected mobile print modal fields to keep a fixed/natural height and not stretch to fill remaining space.");
-        Assert.True(await GetElementHeightAsync(firstSelect) <= 80,
+        Assert.True(await GetElementHeightAsync(firstSelect) <= maxSelectHeightPx,
             "Expected mobile print modal select controls to keep a fixed height and not stretch.");
 
         var generateButton = page.GetByRole(AriaRole.Button, new() { Name = "Generate / Print" });
