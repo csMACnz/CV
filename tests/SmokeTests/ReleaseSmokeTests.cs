@@ -66,6 +66,13 @@ public class ReleaseSmokeTests
             State = WaitForSelectorState.Visible
         });
 
+        var firstField = page.Locator(".print-config-modal__field").First;
+        var firstSelect = page.Locator(".print-config-modal__field > select").First;
+        Assert.True(await GetElementHeightAsync(firstField) <= 160,
+            "Expected mobile print modal fields to keep a fixed/natural height and not stretch to fill remaining space.");
+        Assert.True(await GetElementHeightAsync(firstSelect) <= 80,
+            "Expected mobile print modal select controls to keep a fixed height and not stretch.");
+
         var generateButton = page.GetByRole(AriaRole.Button, new() { Name = "Generate / Print" });
         await generateButton.ScrollIntoViewIfNeededAsync();
 
@@ -187,6 +194,9 @@ public class ReleaseSmokeTests
     private static Task<bool> IsFullyWithinViewportAsync(ILocator locator)
         => locator.EvaluateAsync<bool>(
             "el => { const r = el.getBoundingClientRect(); return r.top >= 0 && r.bottom <= window.innerHeight && r.left >= 0 && r.right <= window.innerWidth; }");
+
+    private static Task<double> GetElementHeightAsync(ILocator locator)
+        => locator.EvaluateAsync<double>("el => el.getBoundingClientRect().height");
 
     private static async Task<BuildResult> RunDotnetPublishReleaseAsync(string baseHref = "/CV/")
     {
