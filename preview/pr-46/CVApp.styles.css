@@ -151,6 +151,7 @@ main[b-zuyx7igfci] {
 }
 
 .print-config-modal__field > select[b-rf54p89i8r] {
+    height: 2.75rem;
     min-height: 2.4rem;
     border: 1px solid #cbd5e1;
     border-radius: 0.5rem;
@@ -193,6 +194,7 @@ main[b-zuyx7igfci] {
         flex: 1;
         min-height: 0;
         overflow-y: auto;
+        align-content: start;
     }
 }
 
