@@ -21,10 +21,21 @@ var cvDataSourceStore = new CvDataSourceFileStore();
 
 // ADR-008 / ADR-010: Serve aggregated experience data from the local content directory.
 // ContentRoot config key lets the Aspire AppHost override the default path.
-app.MapGet("/experience", (IConfiguration config, IWebHostEnvironment env) =>
+app.MapGet("/api/experience", (IConfiguration config, IWebHostEnvironment env) =>
 {
-    var payload = ContentAggregator.Aggregate(ResolveContentRoot(config, env));
-    return Results.Ok(payload);
+    try
+    {
+        var contentRoot = ResolveContentRoot(config, env);
+        var payload = ContentAggregator.Aggregate(contentRoot);
+        return Results.Ok(payload);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(
+            title: "Failed to aggregate experience content",
+            detail: ex.Message,
+            statusCode: StatusCodes.Status500InternalServerError);
+    }
 });
 
 // ADR-004 / ADR-011: Admin aggregate read endpoint — returns the full CvDataSource graph
@@ -217,13 +228,64 @@ app.MapDelete("/api/admin/timeline/{entryId}/projects/{projectId}", async (
             projectId));
 });
 
-static string ResolveContentRoot(IConfiguration config, IWebHostEnvironment env) =>
-    config["ContentRoot"]
-    ?? Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", "..", "content"));
+static string ResolveContentRoot(IConfiguration config, IWebHostEnvironment env)
+{
+    var explicitContentDir = config["ContentDirectory"];
+    if (!string.IsNullOrEmpty(explicitContentDir) && File.Exists(Path.Combine(explicitContentDir, "profile.yaml")))
+        return Path.GetFullPath(explicitContentDir);
 
-static string ResolveCvDataSourcePath(IConfiguration config, IWebHostEnvironment env) =>
-    config["CvDataSourcePath"]
-    ?? Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", "CVApp", "wwwroot", "data", "cv-datasource.json"));
+    var configured = config["ContentRoot"];
+    if (!string.IsNullOrEmpty(configured) && File.Exists(Path.Combine(configured, "profile.yaml")))
+        return Path.GetFullPath(configured);
+
+    var candidateDirs = new[] { env.ContentRootPath, AppContext.BaseDirectory, Directory.GetCurrentDirectory() };
+    foreach (var startDir in candidateDirs)
+    {
+        if (string.IsNullOrEmpty(startDir)) continue;
+        var dir = new DirectoryInfo(startDir);
+        while (dir != null)
+        {
+            var contentDir = Path.Combine(dir.FullName, "content");
+            if (Directory.Exists(contentDir) && File.Exists(Path.Combine(contentDir, "profile.yaml")))
+            {
+                return contentDir;
+            }
+            dir = dir.Parent;
+        }
+    }
+
+    return Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", "..", "content"));
+}
+
+static string ResolveCvDataSourcePath(IConfiguration config, IWebHostEnvironment env)
+{
+    var configured = config["CvDataSourcePath"];
+    if (!string.IsNullOrEmpty(configured))
+    {
+        var fullPath = Path.GetFullPath(configured);
+        var dir = Path.GetDirectoryName(fullPath);
+        if (string.IsNullOrEmpty(dir) || Directory.Exists(dir))
+            return fullPath;
+    }
+
+    var candidateDirs = new[] { env.ContentRootPath, AppContext.BaseDirectory, Directory.GetCurrentDirectory() };
+    foreach (var startDir in candidateDirs)
+    {
+        if (string.IsNullOrEmpty(startDir)) continue;
+        var dir = new DirectoryInfo(startDir);
+        while (dir != null)
+        {
+            var targetDir = Path.Combine(dir.FullName, "src", "CVApp", "wwwroot", "data");
+            if (Directory.Exists(targetDir))
+            {
+                return Path.Combine(targetDir, "cv-datasource.json");
+            }
+            dir = dir.Parent;
+        }
+    }
+
+    return Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", "CVApp", "wwwroot", "data", "cv-datasource.json"));
+}
 
 static async Task<IResult> ExecuteMutationAsync(Func<Task> action)
 {

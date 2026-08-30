@@ -7,6 +7,7 @@ public static class BuildHelpers
 {
     private static readonly string CVAppProjectPath;
     private static readonly string ApiServiceProjectPath;
+    private static readonly string AppHostProjectPath;
     private static readonly string RepositoryRoot;
 
     static BuildHelpers()
@@ -18,6 +19,9 @@ public static class BuildHelpers
         ApiServiceProjectPath = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .FirstOrDefault(a => a.Key == "ApiServiceProjectPath")?.Value
             ?? throw new InvalidOperationException("ApiServiceProjectPath assembly metadata not set. Ensure the TracerTests.csproj defines the AssemblyMetadata for 'ApiServiceProjectPath'.");
+        AppHostProjectPath = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .FirstOrDefault(a => a.Key == "AppHostProjectPath")?.Value
+            ?? throw new InvalidOperationException("AppHostProjectPath assembly metadata not set. Ensure the TracerTests.csproj defines the AssemblyMetadata for 'AppHostProjectPath'.");
         RepositoryRoot = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .FirstOrDefault(a => a.Key == "RepositoryRoot")?.Value
             ?? throw new InvalidOperationException("RepositoryRoot assembly metadata not set. Ensure the TracerTests.csproj defines the AssemblyMetadata for 'RepositoryRoot'.");
@@ -37,6 +41,9 @@ public static class BuildHelpers
 
     public static BuildResult RunDotnetBuildApiService(string configuration, string? extraArgs = null)
         => RunDotnetBuild(configuration, ApiServiceProjectPath, extraArgs);
+
+    public static BuildResult RunDotnetBuildAppHost(string configuration, string? extraArgs = null)
+        => RunDotnetBuild(configuration, AppHostProjectPath, extraArgs);
 
     public static BuildResult RunDotnetPublish(string configuration, string? extraArgs = null)
     {
