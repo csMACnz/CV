@@ -77,4 +77,19 @@ public class TimelineYearMarkerBuilderTests
         Assert.Equal(2026, marker.Year);
         Assert.Equal("50%", marker.Position);
     }
+
+    [Fact]
+    public void Build_DoesNotExtendMissingEndDateWithoutPresentPeriod()
+    {
+        var entries = new[]
+        {
+            new TimelineEntry("Acme", "2024", "Remote", [new Role("Engineer", "2024-01", null, [])])
+        };
+
+        var markers = TimelineYearMarkerBuilder.Build(entries, new DateOnly(2026, 1, 1));
+
+        var marker = Assert.Single(markers);
+        Assert.Equal(2024, marker.Year);
+        Assert.Equal("50%", marker.Position);
+    }
 }
