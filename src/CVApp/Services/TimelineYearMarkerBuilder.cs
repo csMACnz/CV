@@ -10,9 +10,10 @@ public static class TimelineYearMarkerBuilder
             {
                 var startYear = TryResolveYear(item.Role.Start, fallbackYear: null);
                 var hasOpenEndedPeriod = item.Period?.Contains("Present", StringComparison.OrdinalIgnoreCase) == true;
+                var parsedEndYear = TryResolveYear(item.Role.End, fallbackYear: null);
                 int? endYear = string.IsNullOrWhiteSpace(item.Role.End)
                     ? hasOpenEndedPeriod ? referenceDate.Year : null
-                    : TryResolveYear(item.Role.End, fallbackYear: null);
+                    : parsedEndYear ?? (hasOpenEndedPeriod ? referenceDate.Year : null);
 
                 return new
                 {

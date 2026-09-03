@@ -64,6 +64,19 @@ public class TimelineYearMarkerBuilderTests
     }
 
     [Fact]
+    public void Build_TreatsInvalidEndDateAsPresent_WhenPeriodIsMarkedPresent()
+    {
+        var entries = new[]
+        {
+            new TimelineEntry("Future", "2023–Present", "Remote", [new Role("Lead", "2023-10", "invalid", [])])
+        };
+
+        var markers = TimelineYearMarkerBuilder.Build(entries, new DateOnly(2026, 1, 1));
+
+        Assert.Equal([2023, 2024, 2025, 2026], markers.Select(marker => marker.Year));
+    }
+
+    [Fact]
     public void Build_UsesReferenceYearForPresentPeriodWithoutRoleStart()
     {
         var entries = new[]

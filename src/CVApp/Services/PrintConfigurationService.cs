@@ -76,10 +76,7 @@ public sealed class PrintConfigurationService
         if (TimelineDateParser.TryParse(role.End, out var roleEnd))
             return roleEnd >= cutoff;
 
-        if (TimelineDateParser.TryParse(role.Start ?? string.Empty, out var roleStart))
-            return roleStart >= cutoff;
-
-        return false;
+        return true;
     }
 
     public IReadOnlyList<TimelineEntry> FilterTimelineEntries(

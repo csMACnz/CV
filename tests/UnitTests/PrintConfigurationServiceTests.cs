@@ -82,7 +82,7 @@ public class PrintConfigurationServiceTests
     }
 
     [Fact]
-    public void IsRoleIncludedInTimeline_InvalidEndDate_FallsBackToStartDate()
+    public void IsRoleIncludedInTimeline_InvalidEndDate_IsIncluded()
     {
         var service = new PrintConfigurationService();
         var role = new Role("Lead", "2022-01", "2024/03/15", []);
@@ -93,25 +93,25 @@ public class PrintConfigurationServiceTests
     }
 
     [Fact]
-    public void IsRoleIncludedInTimeline_InvalidEndDateOutsideStartWindow_IsExcluded()
+    public void IsRoleIncludedInTimeline_InvalidEndDateOutsideStartWindow_IsStillIncluded()
     {
         var service = new PrintConfigurationService();
         var role = new Role("Lead", "2010-01", "2024/03/15", []);
 
         var included = service.IsRoleIncludedInTimeline(role, TimelineScope.Last5Years, new DateOnly(2026, 1, 1));
 
-        Assert.False(included);
+        Assert.True(included);
     }
 
     [Fact]
-    public void IsRoleIncludedInTimeline_InvalidDatesWithoutRangeEvidence_IsExcluded()
+    public void IsRoleIncludedInTimeline_InvalidDatesWithoutRangeEvidence_IsStillIncluded()
     {
         var service = new PrintConfigurationService();
         var role = new Role("Lead", null, "2024/03/15", []);
 
         var included = service.IsRoleIncludedInTimeline(role, TimelineScope.Last5Years, new DateOnly(2026, 1, 1));
 
-        Assert.False(included);
+        Assert.True(included);
     }
 
     [Fact]
