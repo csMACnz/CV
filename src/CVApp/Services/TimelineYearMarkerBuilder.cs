@@ -9,7 +9,7 @@ public static class TimelineYearMarkerBuilder
             .Select(role =>
             {
                 var startYear = TryResolveYear(role.Start, fallbackYear: null);
-                var endFallback = startYear.HasValue ? referenceDate.Year : null;
+                int? endFallback = startYear.HasValue ? referenceDate.Year : null;
 
                 return new
                 {
