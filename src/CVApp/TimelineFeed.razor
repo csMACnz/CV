@@ -35,35 +35,6 @@
 
     protected override void OnParametersSet()
     {
-        _yearMarkers = TimelineYearMarkerBuilder.Build(Entries, ReferenceDate ?? ResolveReferenceDate(Entries));
-    }
-
-    private static DateOnly ResolveReferenceDate(IReadOnlyList<TimelineEntry> entries)
-    {
-        var explicitEndDates = entries
-            .SelectMany(entry => entry.Roles)
-            .Select(role => TryParseTimelineDate(role.End))
-            .Where(date => date.HasValue)
-            .Select(date => date!.Value)
-            .ToList();
-
-        if (explicitEndDates.Count > 0)
-            return explicitEndDates.Max();
-
-        var startDates = entries
-            .SelectMany(entry => entry.Roles)
-            .Select(role => TryParseTimelineDate(role.Start))
-            .Where(date => date.HasValue)
-            .Select(date => date!.Value)
-            .ToList();
-
-        return startDates.Count > 0 ? startDates.Max() : DateOnly.MinValue;
-    }
-
-    private static DateOnly? TryParseTimelineDate(string? rawValue)
-    {
-        return TimelineDateParser.TryParse(rawValue ?? string.Empty, out var parsedDate)
-            ? parsedDate
-            : null;
+        _yearMarkers = TimelineYearMarkerBuilder.Build(Entries, ReferenceDate ?? DateOnly.FromDateTime(DateTime.Today));
     }
 }
