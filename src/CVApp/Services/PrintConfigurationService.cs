@@ -66,9 +66,6 @@ public sealed class PrintConfigurationService
         if (string.IsNullOrWhiteSpace(role.End))
             return true;
 
-        if (!TimelineDateParser.TryParse(role.End, out var roleEnd))
-            return false;
-
         var cutoff = timelineScope switch
         {
             TimelineScope.Last5Years => referenceDate.AddYears(-5),
@@ -76,7 +73,13 @@ public sealed class PrintConfigurationService
             _ => DateOnly.MinValue
         };
 
-        return roleEnd >= cutoff;
+        if (TimelineDateParser.TryParse(role.End, out var roleEnd))
+            return roleEnd >= cutoff;
+
+        if (TimelineDateParser.TryParse(role.Start, out var roleStart))
+            return roleStart >= cutoff;
+
+        return true;
     }
 
     public IReadOnlyList<TimelineEntry> FilterTimelineEntries(
