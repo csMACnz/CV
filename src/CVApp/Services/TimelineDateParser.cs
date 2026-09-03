@@ -4,7 +4,7 @@ namespace CVApp.Services;
 
 public static class TimelineDateParser
 {
-    private static readonly string[] SupportedDateFormats = ["yyyy-MM", "yyyy-M", "yyyy"];
+    private static readonly string[] SupportedDateFormats = ["yyyy-MM-dd", "yyyy-M-d", "yyyy-MM", "yyyy-M", "yyyy"];
 
     public static bool TryParse(string rawValue, out DateOnly parsedDate)
     {
