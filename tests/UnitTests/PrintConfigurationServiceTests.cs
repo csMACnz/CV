@@ -71,6 +71,17 @@ public class PrintConfigurationServiceTests
     }
 
     [Fact]
+    public void IsRoleIncludedInTimeline_ParsesTrimmedIsoDates()
+    {
+        var service = new PrintConfigurationService();
+        var role = new Role("Lead", "2022-01", " 2024-03 ", []);
+
+        var included = service.IsRoleIncludedInTimeline(role, TimelineScope.Last5Years, new DateOnly(2026, 1, 1));
+
+        Assert.True(included);
+    }
+
+    [Fact]
     public void FilterTimelineEntries_RemovesEntriesWithoutAnyMatchingRole()
     {
         var service = new PrintConfigurationService();

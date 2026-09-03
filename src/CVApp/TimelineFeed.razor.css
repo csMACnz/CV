@@ -67,11 +67,12 @@
 @media (min-width: 960px) {
     .timeline-feed {
         --timeline-rail-position: 50%;
+        --timeline-marker-gap: 1rem;
         padding-left: 0;
     }
 
     .timeline-feed__entries {
-        width: min(100%, calc(50% - 2.5rem));
+        width: min(100%, calc(50% - 4rem));
         margin-left: auto;
     }
 

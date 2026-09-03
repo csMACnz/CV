@@ -17,11 +17,10 @@ public static class TimelineDateParser
         var trimmedValue = rawValue.Trim();
 
         return DateOnly.TryParseExact(
-                   trimmedValue,
-                   SupportedDateFormats,
-                   CultureInfo.InvariantCulture,
-                   DateTimeStyles.None,
-                   out parsedDate)
-               || DateOnly.TryParse(trimmedValue, CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDate);
+            trimmedValue,
+            SupportedDateFormats,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out parsedDate);
     }
 }

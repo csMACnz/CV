@@ -102,6 +102,6 @@
 
 @media (min-width: 960px) {
     .timeline-card::before {
-        left: -2.5rem;
+        left: -4rem;
     }
 }
