@@ -30,8 +30,11 @@
     [Parameter]
     public HighlightMap Highlights { get; set; } = HighlightMap.Empty;
 
+    [Parameter]
+    public DateOnly ReferenceDate { get; set; } = DateOnly.FromDateTime(DateTime.Today);
+
     protected override void OnParametersSet()
     {
-        _yearMarkers = TimelineYearMarkerBuilder.Build(Entries, DateOnly.FromDateTime(DateTime.Today));
+        _yearMarkers = TimelineYearMarkerBuilder.Build(Entries, ReferenceDate);
     }
 }

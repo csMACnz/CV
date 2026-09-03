@@ -9,12 +9,14 @@ public static class TimelineYearMarkerBuilder
             .Select(role =>
             {
                 var startYear = TryResolveYear(role.Start, fallbackYear: null);
-                int? endFallback = startYear.HasValue ? referenceDate.Year : null;
+                int? endYear = string.IsNullOrWhiteSpace(role.End)
+                    ? startYear.HasValue ? referenceDate.Year : null
+                    : TryResolveYear(role.End, fallbackYear: null);
 
                 return new
                 {
                     Start = startYear,
-                    End = TryResolveYear(role.End, fallbackYear: endFallback)
+                    End = endYear
                 };
             })
             .Where(role => role.Start.HasValue || role.End.HasValue)
