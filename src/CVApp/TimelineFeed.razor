@@ -30,8 +30,8 @@
     [Parameter]
     public HighlightMap Highlights { get; set; } = HighlightMap.Empty;
 
-    [Parameter]
-    public DateOnly ReferenceDate { get; set; } = DateOnly.FromDateTime(DateTime.Today);
+    [Parameter, EditorRequired]
+    public DateOnly ReferenceDate { get; set; }
 
     protected override void OnParametersSet()
     {

@@ -28,6 +28,7 @@
     position: absolute;
     inset: var(--timeline-rail-inset) 0;
     pointer-events: none;
+    z-index: 1;
 }
 
 .timeline-feed__year-marker {

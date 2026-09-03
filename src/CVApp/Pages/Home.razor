@@ -22,7 +22,7 @@ else
         <SkillMatrix Skills="@AllSkills"
                      ActiveSkill="@ActiveSkill"
                      ActiveSkillChanged="@OnActiveSkillChanged" />
-        <TimelineFeed Entries="@FilteredTimeline" Highlights="@CurrentHighlights" />
+        <TimelineFeed Entries="@FilteredTimeline" Highlights="@CurrentHighlights" ReferenceDate="@Today" />
     </div>
 }
 
