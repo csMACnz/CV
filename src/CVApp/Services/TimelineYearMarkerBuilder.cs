@@ -6,10 +6,16 @@ public static class TimelineYearMarkerBuilder
     {
         var datedRoles = entries
             .SelectMany(entry => entry.Roles)
-            .Select(role => new
+            .Select(role =>
             {
-                Start = TryResolveYear(role.Start, fallbackYear: null),
-                End = TryResolveYear(role.End, fallbackYear: referenceDate.Year)
+                var startYear = TryResolveYear(role.Start, fallbackYear: null);
+                var endFallback = startYear.HasValue ? referenceDate.Year : null;
+
+                return new
+                {
+                    Start = startYear,
+                    End = TryResolveYear(role.End, fallbackYear: endFallback)
+                };
             })
             .Where(role => role.Start.HasValue || role.End.HasValue)
             .ToList();
