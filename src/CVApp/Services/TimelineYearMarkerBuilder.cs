@@ -5,13 +5,14 @@ public static class TimelineYearMarkerBuilder
     public static IReadOnlyList<TimelineYearMarker> Build(IReadOnlyList<TimelineEntry> entries, DateOnly referenceDate)
     {
         var datedRoles = entries
-            .SelectMany(entry => entry.Roles)
-            .Select(role =>
+            .SelectMany(entry => entry.Roles.Select(role => new { entry.Period, Role = role }))
+            .Select(item =>
             {
-                var startYear = TryResolveYear(role.Start, fallbackYear: null);
-                int? endYear = string.IsNullOrWhiteSpace(role.End)
-                    ? startYear.HasValue ? referenceDate.Year : null
-                    : TryResolveYear(role.End, fallbackYear: null);
+                var startYear = TryResolveYear(item.Role.Start, fallbackYear: null);
+                var hasOpenEndedPeriod = item.Period?.Contains("Present", StringComparison.OrdinalIgnoreCase) == true;
+                int? endYear = string.IsNullOrWhiteSpace(item.Role.End)
+                    ? startYear.HasValue || hasOpenEndedPeriod ? referenceDate.Year : null
+                    : TryResolveYear(item.Role.End, fallbackYear: null);
 
                 return new
                 {

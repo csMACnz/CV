@@ -62,4 +62,19 @@ public class TimelineYearMarkerBuilderTests
         Assert.Equal(2024, marker.Year);
         Assert.Equal("50%", marker.Position);
     }
+
+    [Fact]
+    public void Build_UsesReferenceYearForPresentPeriodWithoutRoleStart()
+    {
+        var entries = new[]
+        {
+            new TimelineEntry("Future", "2023–Present", "Remote", [new Role("Lead", null, null, [])])
+        };
+
+        var markers = TimelineYearMarkerBuilder.Build(entries, new DateOnly(2026, 1, 1));
+
+        var marker = Assert.Single(markers);
+        Assert.Equal(2026, marker.Year);
+        Assert.Equal("50%", marker.Position);
+    }
 }

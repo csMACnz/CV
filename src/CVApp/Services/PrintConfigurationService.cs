@@ -67,7 +67,7 @@ public sealed class PrintConfigurationService
             return true;
 
         if (!TimelineDateParser.TryParse(role.End, out var roleEnd))
-            return true;
+            return false;
 
         var cutoff = timelineScope switch
         {
