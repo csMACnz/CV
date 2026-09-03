@@ -14,12 +14,14 @@ public static class TimelineDateParser
             return false;
         }
 
+        var trimmedValue = rawValue.Trim();
+
         return DateOnly.TryParseExact(
-                   rawValue.Trim(),
+                   trimmedValue,
                    SupportedDateFormats,
                    CultureInfo.InvariantCulture,
                    DateTimeStyles.None,
                    out parsedDate)
-               || DateOnly.TryParse(rawValue, CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDate);
+               || DateOnly.TryParse(trimmedValue, CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDate);
     }
 }
