@@ -71,6 +71,50 @@ public class PrintConfigurationServiceTests
     }
 
     [Fact]
+    public void IsRoleIncludedInTimeline_ParsesTrimmedIsoDates()
+    {
+        var service = new PrintConfigurationService();
+        var role = new Role("Lead", "2022-01", " 2024-03-15 ", []);
+
+        var included = service.IsRoleIncludedInTimeline(role, TimelineScope.Last5Years, new DateOnly(2026, 1, 1));
+
+        Assert.True(included);
+    }
+
+    [Fact]
+    public void IsRoleIncludedInTimeline_InvalidEndDate_IsIncluded()
+    {
+        var service = new PrintConfigurationService();
+        var role = new Role("Lead", "2022-01", "2024/03/15", []);
+
+        var included = service.IsRoleIncludedInTimeline(role, TimelineScope.Last5Years, new DateOnly(2026, 1, 1));
+
+        Assert.True(included);
+    }
+
+    [Fact]
+    public void IsRoleIncludedInTimeline_InvalidEndDateOutsideStartWindow_IsStillIncluded()
+    {
+        var service = new PrintConfigurationService();
+        var role = new Role("Lead", "2010-01", "2024/03/15", []);
+
+        var included = service.IsRoleIncludedInTimeline(role, TimelineScope.Last5Years, new DateOnly(2026, 1, 1));
+
+        Assert.True(included);
+    }
+
+    [Fact]
+    public void IsRoleIncludedInTimeline_InvalidDatesWithoutRangeEvidence_IsStillIncluded()
+    {
+        var service = new PrintConfigurationService();
+        var role = new Role("Lead", null, "2024/03/15", []);
+
+        var included = service.IsRoleIncludedInTimeline(role, TimelineScope.Last5Years, new DateOnly(2026, 1, 1));
+
+        Assert.True(included);
+    }
+
+    [Fact]
     public void FilterTimelineEntries_RemovesEntriesWithoutAnyMatchingRole()
     {
         var service = new PrintConfigurationService();

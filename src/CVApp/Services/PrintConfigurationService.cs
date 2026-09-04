@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace CVApp.Services;
 
 public enum TimelineScope
@@ -28,8 +26,6 @@ public sealed record PrintConfiguration(
 
 public sealed class PrintConfigurationService
 {
-    private static readonly string[] SupportedDateFormats = ["yyyy-MM", "yyyy-M", "yyyy"];
-
     public event Action? Changed;
 
     public PrintConfiguration Current { get; private set; } = new();
@@ -70,9 +66,6 @@ public sealed class PrintConfigurationService
         if (string.IsNullOrWhiteSpace(role.End))
             return true;
 
-        if (!TryParseDate(role.End, out var roleEnd))
-            return true;
-
         var cutoff = timelineScope switch
         {
             TimelineScope.Last5Years => referenceDate.AddYears(-5),
@@ -80,7 +73,10 @@ public sealed class PrintConfigurationService
             _ => DateOnly.MinValue
         };
 
-        return roleEnd >= cutoff;
+        if (TimelineDateParser.TryParse(role.End, out var roleEnd))
+            return roleEnd >= cutoff;
+
+        return true;
     }
 
     public IReadOnlyList<TimelineEntry> FilterTimelineEntries(
@@ -103,16 +99,5 @@ public sealed class PrintConfigurationService
         }
 
         return filtered;
-    }
-
-    private static bool TryParseDate(string rawValue, out DateOnly parsedDate)
-    {
-        return DateOnly.TryParseExact(
-                   rawValue.Trim(),
-                   SupportedDateFormats,
-                   CultureInfo.InvariantCulture,
-                   DateTimeStyles.None,
-                   out parsedDate)
-               || DateOnly.TryParse(rawValue, CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDate);
     }
 }

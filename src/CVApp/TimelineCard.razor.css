@@ -1,8 +1,28 @@
 .timeline-card {
+    position: relative;
     background: var(--color-card-bg);
     border: 1px solid var(--color-card-border);
     border-radius: 0.5rem;
     padding: 1.25rem 1.5rem;
+}
+
+.timeline-card::before {
+    content: '';
+    position: absolute;
+    left: -1.5rem;
+    top: 1.5rem;
+    width: 0.875rem;
+    height: 0.875rem;
+    border-radius: 50%;
+    background: var(--color-card-bg);
+    border: 3px solid var(--color-timeline-rail);
+    transform: translateX(-50%);
+    z-index: 1;
+}
+
+.timeline-card.is-highlighted::before {
+    border-color: var(--color-link);
+    background: var(--color-link);
 }
 
 .timeline-card__header {
@@ -77,5 +97,11 @@
 @media print {
     .projects-section--collapsed {
         display: grid !important;
+    }
+}
+
+@media (min-width: 960px) {
+    .timeline-card::before {
+        left: -4rem;
     }
 }
